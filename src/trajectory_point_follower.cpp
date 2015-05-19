@@ -21,6 +21,8 @@ bool TrajectoryLineFollower::cycle() {
     double x_soll = trajectoryPoint->first.x;
     double v = 0.5;
 
+    v = max(0.05, v); //darf nicht 0 werden
+
     double t_end = ((fabs(x_soll) + fabs(y_soll)) + sqrt(x_soll * x_soll + y_soll * y_soll)) / (2.0 * v);
 
     //double delta_hinten = delta_h(phi_soll, t_end, v, y_soll);
