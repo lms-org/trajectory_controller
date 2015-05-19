@@ -21,6 +21,10 @@ bool TrajectoryLineFollower::cycle() {
     double x_soll = trajectoryPoint->first.x;
     double v = controlData->control.velocity.velocity;
     logger.debug("soll: ")<< x_soll << " " << y_soll << " " << phi_soll;
+
+    if(v <= 0)
+        v = 0.05; //darf nicht 0 werden
+
     double t_end = ((fabs(x_soll) + fabs(y_soll)) + sqrt(x_soll * x_soll + y_soll * y_soll)) / (2.0 * v);
 
     //double delta_hinten = delta_h(phi_soll, t_end, v, y_soll);
