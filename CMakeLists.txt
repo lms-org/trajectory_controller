@@ -8,5 +8,5 @@ set (HEADERS
 )
 include_directories("include")
 
-add_library (trajectory_point_follower MODULE ${SOURCES} ${HEADERS})
-target_link_libraries(trajectory_point_follower PRIVATE lms)
+add_library (trajectory_point_controller MODULE ${SOURCES} ${HEADERS})
+target_link_libraries(trajectory_point_controller PRIVATE lms)

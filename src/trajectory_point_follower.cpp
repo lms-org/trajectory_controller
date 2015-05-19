@@ -19,23 +19,27 @@ bool TrajectoryLineFollower::cycle() {
     double phi_soll = atan2(trajectoryPoint->second.y, trajectoryPoint->second.x);
     double y_soll = trajectoryPoint->first.y;
     double x_soll = trajectoryPoint->first.x;
-    double v = 0.5;
-
+    double v = controlData->control.velocity.velocity;
+    logger.debug("soll: ")<< x_soll << " " << y_soll << " " << phi_soll;
     double t_end = ((fabs(x_soll) + fabs(y_soll)) + sqrt(x_soll * x_soll + y_soll * y_soll)) / (2.0 * v);
 
     //double delta_hinten = delta_h(phi_soll, t_end, v, y_soll);
     //double delta_vorne = delta_v(phi_soll, t_end, v, y_soll, delta_hinten);
+    /*
     double delta_hinten = delta_h(y_soll, phi_soll, t_end);
     double delta_vorne = delta_v(y_soll, phi_soll, t_end, delta_hinten);
+    */
 
+    double delta_hinten = delta_c_h(phi_soll,t_end,v,y_soll);
+    double delta_vorne = delta_c_v(phi_soll,t_end,v,y_soll,delta_hinten);
     logger.debug("cycle")<< "delta_hinten: \t" << delta_hinten ;
     logger.debug("cycle")<< "delta_vorne: \t" << delta_vorne ;
     logger.info("cycle")<< "------------------------------------";
 
     controlData->vel_mode = Comm::SensorBoard::ControlData::MODE_VELOCITY;
     controlData->steering_front = delta_vorne; // * 180. / M_PI;
-    controlData->steering_rear = delta_hinten; // * 180. / M_PI;
-    controlData->control.velocity.velocity = 0.5;
+    controlData->steering_rear = -delta_hinten; // * 180. / M_PI;
+    //controlData->control.velocity.velocity = 0.5;
     return true;
 }
 
@@ -61,7 +65,7 @@ double TrajectoryLineFollower::delta_v(double y_s, double phi_s, double te, doub
 
 }
 
-/*double TrajectoryLineFollower::delta_h(double phi_s, double te, double v, double y_s)
+double TrajectoryLineFollower::delta_c_h(double phi_s, double te, double v, double y_s)
 {
   return ((0.08577 * exp(te * sqrt(3.134 * (v * v))) * exp(te * sqrt(14.16 * (v *
               v))) * (((((((((4.984 * phi_s * (v * v) * exp(te * sqrt(14.16 * (v
@@ -184,7 +188,7 @@ double TrajectoryLineFollower::delta_v(double y_s, double phi_s, double te, doub
     (v * v))) * sqrt(3.134 * (v * v)) * sqrt(14.16 * (v * v)));
 }
 
-double TrajectoryLineFollower::delta_v(double phi_s, double te, double v, double y_s, double dh)
+double TrajectoryLineFollower::delta_c_v(double phi_s, double te, double v, double y_s, double dh)
 {
   return atan((sin(dh) + 0.52 * (((sqrt(3.134 * (v * v)) * (((((((((0.06667 *
     phi_s * (v * v) * exp(te * sqrt(3.134 * (v * v))) - 0.06667 * phi_s * (v * v)
@@ -300,7 +304,7 @@ double TrajectoryLineFollower::delta_v(double phi_s, double te, double v, double
       sqrt(3.134 * (v * v)) * sqrt(14.16 * (v * v))) + 0.1731 * exp(te * sqrt
     (3.134 * (v * v))) * exp(te * sqrt(14.16 * (v * v))) * sqrt(3.134 * (v * v))
      * sqrt(14.16 * (v * v)))) / v) / cos(dh));
-}*/
+}
 
 
 
