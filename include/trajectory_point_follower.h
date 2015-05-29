@@ -7,7 +7,7 @@
 
 #include "comm/senseboard.h"
 
-class TrajectoryLineFollower : public lms::Module {
+class TrajectoryPointController : public lms::Module {
 public:
     bool initialize() override;
     bool deinitialize() override;

@@ -3,7 +3,7 @@
 extern "C" {
 
 void* getInstance() {
-    return new TrajectoryLineFollower();
+    return new TrajectoryPointController();
 }
 
 }
