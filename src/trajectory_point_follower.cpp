@@ -12,14 +12,10 @@ bool TrajectoryPointController::deinitialize() {
 }
 
 bool TrajectoryPointController::cycle() {
-
-    //std::pair<float,float> steering = TobisRegler_Simpel(trajectoryPoint->first.x, trajectoryPoint->first.y,
-    //        atan2(trajectoryPoint->second.y, trajectoryPoint->second.x), 0.5);
-
     double phi_soll = atan2(trajectoryPoint->second.y, trajectoryPoint->second.x);
     double y_soll = trajectoryPoint->first.y;
     double x_soll = trajectoryPoint->first.x;
-    controlData->control.velocity.velocity = 0.5*4;
+    controlData->control.velocity.velocity = getConfig()->get<float>("maxSpeed");
     double v = controlData->control.velocity.velocity;
     logger.debug("soll: ")<< x_soll << " " << y_soll << " " << phi_soll;
 
@@ -27,13 +23,6 @@ bool TrajectoryPointController::cycle() {
         v = 0.05; //darf nicht 0 werden
 
     double t_end = ((fabs(x_soll) + fabs(y_soll)) + sqrt(x_soll * x_soll + y_soll * y_soll)) / (2.0 * v);
-
-    //double delta_hinten = delta_h(phi_soll, t_end, v, y_soll);
-    //double delta_vorne = delta_v(phi_soll, t_end, v, y_soll, delta_hinten);
-    /*
-    double delta_hinten = delta_h(y_soll, phi_soll, t_end);
-    double delta_vorne = delta_v(y_soll, phi_soll, t_end, delta_hinten);
-    */
 
     double delta_hinten = delta_c_h(phi_soll,t_end,v,y_soll);
     double delta_vorne = delta_c_v(phi_soll,t_end,v,y_soll,delta_hinten);
@@ -44,17 +33,8 @@ bool TrajectoryPointController::cycle() {
     controlData->vel_mode = Comm::SensorBoard::ControlData::MODE_VELOCITY;
     controlData->steering_front = delta_vorne; // * 180. / M_PI;
     controlData->steering_rear = -delta_hinten; // * 180. / M_PI;
-    //controlData->control.velocity.velocity = 0.5;
     return true;
 }
-
-/*std::pair<float,float> TrajectoryLineFollower::smartRegler(float x, float y, float phi){
-    (void)x;
-    logger.info("input_data: ") << y << " " << phi;
-    float delta_v = 3*y;
-    float delta_h = phi;
-    return std::make_pair(delta_v, delta_h);
-}*/
 
 double TrajectoryPointController::delta_h(double y_s, double phi_s, double te)
 {
