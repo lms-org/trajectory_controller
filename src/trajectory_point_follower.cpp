@@ -12,6 +12,15 @@ bool TrajectoryPointController::deinitialize() {
 }
 
 bool TrajectoryPointController::cycle() {
+    positionController();
+    return true;
+}
+
+void TrajectoryPointController::speedController(){
+
+}
+
+void TrajectoryPointController::positionController(){
     double phi_soll = atan2(trajectoryPoint->second.y, trajectoryPoint->second.x);
     double y_soll = trajectoryPoint->first.y;
     double x_soll = trajectoryPoint->first.x;
@@ -33,7 +42,6 @@ bool TrajectoryPointController::cycle() {
     controlData->vel_mode = Comm::SensorBoard::ControlData::MODE_VELOCITY;
     controlData->steering_front = delta_vorne; // * 180. / M_PI;
     controlData->steering_rear = -delta_hinten; // * 180. / M_PI;
-    return true;
 }
 
 double TrajectoryPointController::delta_h(double y_s, double phi_s, double te)
