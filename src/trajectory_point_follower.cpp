@@ -24,7 +24,7 @@ void TrajectoryPointController::positionController(){
     double phi_soll = atan2(trajectoryPoint->second.y, trajectoryPoint->second.x);
     double y_soll = trajectoryPoint->first.y;
     double x_soll = trajectoryPoint->first.x;
-    //controlData->control.velocity.velocity = getConfig()->get<float>("maxSpeed");
+    controlData->control.velocity.velocity = getConfig()->get<float>("maxSpeed");
     double v = controlData->control.velocity.velocity;
     logger.debug("soll: ")<< x_soll << " " << y_soll << " " << phi_soll;
 
