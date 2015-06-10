@@ -1,9 +1,8 @@
 #include "trajectory_point_follower.h"
 #include <cmath>
 bool TrajectoryPointController::initialize() {
-    controlData = datamanager()->writeChannel<Comm::SensorBoard::ControlData>(this,"CONTROL_DATA");
     trajectoryPoint = datamanager()->writeChannel<std::pair<lms::math::vertex2f,lms::math::vertex2f>>(this,"POINT");
-
+    car = datamanager()->writeChannel<sensor_utils::Car>(this,"CAR");
     return true;
 }
 
@@ -24,8 +23,7 @@ void TrajectoryPointController::positionController(){
     double phi_soll = atan2(trajectoryPoint->second.y, trajectoryPoint->second.x);
     double y_soll = trajectoryPoint->first.y;
     double x_soll = trajectoryPoint->first.x;
-    //controlData->control.velocity.velocity = getConfig()->get<float>("maxSpeed");
-    double v = controlData->control.velocity.velocity;
+    double v = car->velocity;
     logger.debug("soll: ")<< x_soll << " " << y_soll << " " << phi_soll;
 
     if(v <= 0)
@@ -39,9 +37,8 @@ void TrajectoryPointController::positionController(){
     logger.debug("cycle")<< "delta_vorne: \t" << delta_vorne ;
     logger.info("cycle")<< "------------------------------------";
 
-    controlData->vel_mode = Comm::SensorBoard::ControlData::MODE_VELOCITY;
-    controlData->steering_front = delta_vorne; // * 180. / M_PI;
-    controlData->steering_rear = -delta_hinten; // * 180. / M_PI;
+    car->steering_front = delta_vorne; // * 180. / M_PI;
+    car->steering_rear = -delta_hinten; // * 180. / M_PI;
 }
 
 double TrajectoryPointController::delta_h(double y_s, double phi_s, double te)

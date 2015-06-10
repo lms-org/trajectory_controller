@@ -6,6 +6,7 @@
 #include "lms/math/vertex.h"
 
 #include "comm/senseboard.h"
+#include "sensor_utils/car.h"
 
 class TrajectoryPointController : public lms::Module {
 public:
@@ -23,8 +24,8 @@ private:
 
     void speedController();
 
-    Comm::SensorBoard::ControlData *controlData;
     const std::pair<lms::math::vertex2f, lms::math::vertex2f> *trajectoryPoint;
+    sensor_utils::Car *car;
 };
 
 #endif /* IMAGE_HINT_TRANSFORMER_H */
