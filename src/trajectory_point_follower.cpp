@@ -17,7 +17,7 @@ bool TrajectoryPointController::cycle() {
 }
 
 void TrajectoryPointController::speedController(){
-
+    //TODO löschen
 }
 
 void TrajectoryPointController::positionController(){
@@ -30,8 +30,8 @@ void TrajectoryPointController::positionController(){
 
     if(v <= 0)
         v = 0.05; //darf nicht 0 werden
-
-    double t_end = ((fabs(x_soll) + fabs(y_soll)) + sqrt(x_soll * x_soll + y_soll * y_soll)) / (2.0 * v);
+    float aggro = getConfig()->get<float>("aggro",1);
+    double t_end = aggro*((fabs(x_soll) + fabs(y_soll)) + sqrt(x_soll * x_soll + y_soll * y_soll)) / (2.0 * v);
 
     double delta_hinten = delta_c_h(phi_soll,t_end,v,y_soll);
     double delta_vorne = delta_c_v(phi_soll,t_end,v,y_soll,delta_hinten);
