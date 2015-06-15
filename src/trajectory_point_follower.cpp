@@ -15,10 +15,6 @@ bool TrajectoryPointController::cycle() {
     return true;
 }
 
-void TrajectoryPointController::speedController(){
-    //TODO löschen
-}
-
 void TrajectoryPointController::positionController(){
     double phi_soll = atan2(trajectoryPoint->second.y, trajectoryPoint->second.x);
     double y_soll = trajectoryPoint->first.y;

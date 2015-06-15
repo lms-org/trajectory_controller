@@ -21,9 +21,6 @@ private:
     double delta_h(double y_s, double phi_s, double te);
     double delta_v(double y_s, double phi_s, double te, double dh);
 
-
-    void speedController();
-
     const std::pair<lms::math::vertex2f, lms::math::vertex2f> *trajectoryPoint;
     sensor_utils::Car *car;
 };
