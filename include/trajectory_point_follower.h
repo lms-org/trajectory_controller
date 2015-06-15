@@ -16,6 +16,7 @@ public:
 private:
 
     void positionController();
+    void positionControllerVel();
     double delta_c_h(double phi_s, double te, double v, double y_s);
     double delta_c_v(double phi_s, double te, double v, double y_s, double dh);
     double delta_h(double y_s, double phi_s, double te);

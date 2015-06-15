@@ -1,4 +1,5 @@
 #include "trajectory_point_follower.h"
+#include "lenkwinkel.h"
 #include <cmath>
 bool TrajectoryPointController::initialize() {
     trajectoryPoint = datamanager()->writeChannel<std::pair<lms::math::vertex2f,lms::math::vertex2f>>(this,"POINT");
@@ -15,7 +16,25 @@ bool TrajectoryPointController::cycle() {
     return true;
 }
 
+
 void TrajectoryPointController::positionController(){
+    double phi_soll = atan2(trajectoryPoint->second.y, trajectoryPoint->second.x);
+    double y_soll = trajectoryPoint->first.y;
+    double x_soll = trajectoryPoint->first.x;
+
+    double delta_hinten;
+    double delta_vorne;
+
+    lenkwinkel(x_soll, y_soll, phi_soll, &delta_hinten,
+      &delta_vorne);
+
+
+    car->steering_front = delta_vorne; // * 180. / M_PI;
+    car->steering_rear = -delta_hinten; // * 180. / M_PI;
+}
+
+
+void TrajectoryPointController::positionControllerVel(){
     double phi_soll = atan2(trajectoryPoint->second.y, trajectoryPoint->second.x);
     double y_soll = trajectoryPoint->first.y;
     double x_soll = trajectoryPoint->first.x;
