@@ -1,5 +1,7 @@
 #include "trajectory_point_follower.h"
+extern "C"{
 #include "lenkwinkel.h"
+}
 #include <cmath>
 bool TrajectoryPointController::initialize() {
     trajectoryPoint = datamanager()->writeChannel<std::pair<lms::math::vertex2f,lms::math::vertex2f>>(this,"POINT");
