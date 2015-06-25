@@ -30,7 +30,11 @@ void TrajectoryPointController::positionController(){
     lenkwinkel(x_soll, y_soll, phi_soll, &delta_hinten,
       &delta_vorne);
 
-
+    if(isnan(delta_vorne) || isnan(delta_hinten) ){
+        logger.error("positionController: ")<<"invalid vals: " <<delta_vorne <<" " <<delta_hinten ;
+        delta_vorne = 0;
+        delta_hinten = 0;
+    }
     car->steering_front = delta_vorne; // * 180. / M_PI;
     car->steering_rear = -delta_hinten; // * 180. / M_PI;
 }
