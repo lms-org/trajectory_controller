@@ -2,7 +2,7 @@
  * File: lenkwinkel.h
  *
  * MATLAB Coder version            : 2.7
- * C/C++ source code generated on  : 15-Jun-2015 17:03:28
+ * C/C++ source code generated on  : 26-Jun-2015 19:58:43
  */
 
 #ifndef __LENKWINKEL_H__
@@ -16,8 +16,8 @@
 #include "lenkwinkel_types.h"
 
 /* Function Declarations */
-extern void lenkwinkel(double x_s, double y_s, double phi_s, double *delta_h,
-  double *delta_v);
+extern void lenkwinkel(double x_s, double y_s, double phi_s, unsigned char
+  chooser, double *delta_h, double *delta_v);
 
 #endif
 

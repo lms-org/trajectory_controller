@@ -2,7 +2,7 @@
  * File: _coder_lenkwinkel_api.h 
  *  
  * MATLAB Coder version            : 2.7 
- * C/C++ source code generated on  : 15-Jun-2015 17:03:28 
+ * C/C++ source code generated on  : 26-Jun-2015 19:58:43 
  */
 
 #ifndef ___CODER_LENKWINKEL_API_H__
@@ -20,8 +20,8 @@
 extern void lenkwinkel_initialize(emlrtContext *aContext);
 extern void lenkwinkel_terminate(void);
 extern void lenkwinkel_atexit(void);
-extern void lenkwinkel_api(const mxArray * const prhs[3], const mxArray *plhs[2]);
-extern void lenkwinkel(real_T x_s, real_T y_s, real_T phi_s, real_T *delta_h, real_T *delta_v);
+extern void lenkwinkel_api(const mxArray * const prhs[4], const mxArray *plhs[2]);
+extern void lenkwinkel(real_T x_s, real_T y_s, real_T phi_s, uint8_T chooser, real_T *delta_h, real_T *delta_v);
 extern void lenkwinkel_xil_terminate(void);
 
 #endif

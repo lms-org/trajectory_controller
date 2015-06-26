@@ -6,7 +6,7 @@
 <title>Code Generation Report</title>
 <link rel="stylesheet" type="text/css" href="file:///C:\\Program Files\\MATLAB\\R2014b\\toolbox\\coder\\coder\\resources\\eml_report.css" />
 <link rel="stylesheet" type="text/css" href="file:///C:\\Program Files\\MATLAB\\R2014b\\toolbox\\coder\\coder\\resources\\jQuery\\ui.resizable.css" />
-<link rel="stylesheet" type="text/css" href="file:///C:\\Users\\Tobias\\Google Drive\\Uni\\Phoenix\\optimal_control_phoenix\\codegen\\lib\\lenkwinkel\\html\\index.css" />
+<link rel="stylesheet" type="text/css" href="file:///C:\\Users\\Tobias\\Google Drive\\Uni\\Phoenix\\optimal_control\\codegen\\lib\\lenkwinkel\\html\\index.css" />
 
 <script type="text/javascript" src="file:///C:\\Program Files\\MATLAB\\R2014b\\toolbox\\coder\\coder\\resources\\jQuery\\jquery-1.3.2.min.js"></script>
 <script type="text/javascript" src="file:///C:\\Program Files\\MATLAB\\R2014b\\toolbox\\coder\\coder\\resources\\jQuery\\jquery-ui-1.7.custom.min.js"></script>
@@ -40,18 +40,18 @@ var keyBindings = {
 };
 var functionInfoTable = {
  MATLABcode1: "lenkwinkel1_mcode.html",
- fpath1: "C:/Users/Tobias/Google Drive/Uni/Phoenix/optimal_control_phoenix/lenkwinkel.m",
- lines1: [1, 1, 7],
+ fpath1: "C:/Users/Tobias/Google Drive/Uni/Phoenix/optimal_control/lenkwinkel.m",
+ lines1: [1, 1, 18],
  watch1: "lenkwinkel1_watch.html",
- title1: "Function: <span class='functionname'><a title='C:&nbsp;\\Users\\Tobias\\Google&nbsp;Drive\\Uni\\Phoenix\\optimal_control_phoenix\\lenkwinkel.m' class='functionlink' href=\"matlab: open('C:\\Users\\Tobias\\Google Drive\\Uni\\Phoenix\\optimal_control_phoenix\\lenkwinkel.m')\">lenkwinkel</a></span>",
+ title1: "Function: <span class='functionname'><a title='C:&nbsp;\\Users\\Tobias\\Google&nbsp;Drive\\Uni\\Phoenix\\optimal_control\\lenkwinkel.m' class='functionlink' href=\"matlab: open('C:\\Users\\Tobias\\Google Drive\\Uni\\Phoenix\\optimal_control\\lenkwinkel.m')\">lenkwinkel</a></span>",
  tcall1: [  ],
  scall1: [  ],
  rootFcnID: "1",
  firstPage: "lenkwinkel_c.html",
- htmlRoot: "C:/Users/Tobias/Google%20Drive/Uni/Phoenix/optimal_control_phoenix/codegen/lib/lenkwinkel/html/"
+ htmlRoot: "C:/Users/Tobias/Google%20Drive/Uni/Phoenix/optimal_control/codegen/lib/lenkwinkel/html/"
 };
 var scriptInfoTable = {
- fpath1: "C:/Users/Tobias/Google Drive/Uni/Phoenix/optimal_control_phoenix/lenkwinkel.m",
+ fpath1: "C:/Users/Tobias/Google Drive/Uni/Phoenix/optimal_control/lenkwinkel.m",
  fpath2: "C:/Program Files/MATLAB/R2014b/toolbox/shared/coder/coder/+coder/+internal/isBuiltInNumeric.m",
  fpath3: "C:/Program Files/MATLAB/R2014b/toolbox/eml/lib/matlab/elmat/ismatrix.m",
  fpath4: "C:/Program Files/MATLAB/R2014b/toolbox/coder/coder/+coder/+internal/scalarEg.p",
@@ -133,6 +133,7 @@ var scriptInfoTable = {
 <div class="class">
 <select class="myfunc-filter class">
 <option value="1">double</option>
+<option value="1">uint8</option>
 </select>
 </div>
 <!-- End Class Filter -->
@@ -225,10 +226,11 @@ var scriptInfoTable = {
 <div class="tooltip" id="TT3"><table class="tooltip"><tr><th>Size</th><td>1 x 2</td></tr><tr><th>Class</th><td>cell</td></tr></table></div>
 <div class="tooltip" id="TT4"><table class="tooltip"><tr><th>Size</th><td>1 x 1</td></tr><tr><th>Class</th><td>coder.internal.indexInt</td></tr><tr><th>Complex</th><td>No</td></tr></table></div>
 <div class="tooltip" id="TT5"><table class="tooltip"><tr><th>Size</th><td>1 x 1</td></tr><tr><th>Class</th><td>cell</td></tr></table></div>
-<div class="tooltip" id="TT6"><table class="tooltip"><tr><th>Size</th><td>1 x 13</td></tr><tr><th>Class</th><td>char</td></tr></table></div>
-<div class="tooltip" id="TT7"><table class="tooltip"><tr><th>Size</th><td>1 x 0</td></tr><tr><th>Class</th><td>cell</td></tr></table></div>
-<div class="tooltip" id="TT8"><table class="tooltip"><tr><th>Size</th><td>1 x 30</td></tr><tr><th>Class</th><td>char</td></tr></table></div>
-<div class="tooltip" id="TT9"><table class="tooltip"><tr><th>Size</th><td>1 x 4</td></tr><tr><th>Class</th><td>char</td></tr></table></div>
+<div class="tooltip" id="TT6"><table class="tooltip"><tr><th>Size</th><td>1 x 1</td></tr><tr><th>Class</th><td>uint8</td></tr><tr><th>Complex</th><td>No</td></tr></table></div>
+<div class="tooltip" id="TT7"><table class="tooltip"><tr><th>Size</th><td>1 x 13</td></tr><tr><th>Class</th><td>char</td></tr></table></div>
+<div class="tooltip" id="TT8"><table class="tooltip"><tr><th>Size</th><td>1 x 0</td></tr><tr><th>Class</th><td>cell</td></tr></table></div>
+<div class="tooltip" id="TT9"><table class="tooltip"><tr><th>Size</th><td>1 x 30</td></tr><tr><th>Class</th><td>char</td></tr></table></div>
+<div class="tooltip" id="TT10"><table class="tooltip"><tr><th>Size</th><td>1 x 4</td></tr><tr><th>Class</th><td>char</td></tr></table></div>
 </div>
 </div>
 <!-- End Tooltips -->
@@ -245,7 +247,7 @@ var scriptInfoTable = {
 <!-- Compilation Summary -->
 <div id="summarybody" class="ui-tabs-panel">
 <table cellpadding="1" cellspacing="4">
-<tr><td>C source code generated on:</td><td>15-Jun-2015 17:03:31</td></tr>
+<tr><td>C source code generated on:</td><td>26-Jun-2015 19:58:47</td></tr>
 <tr><td>Coding target:</td><td>Static Library</td></tr>
 <tr><td>Number of errors:</td><td><a href="javascript:selectMessagesTab();">0</a></td></tr>
 <tr><td>Number of warnings:</td><td><a href="javascript:selectMessagesTab();">0</a></td></tr>
@@ -278,7 +280,7 @@ Loading Variables table ...
 <td align="left" class="td-linebottomrt-gray" colspan="2">Build Parameters</td>
 </tr>
 <tr><td align="left" valign="top" class="td-linebottomrt">Build directory</td>
-<td align="left" valign="top" class="td-linebottomrt-link"><a href="matlab: cd('C:\Users\Tobias\Google Drive\Uni\Phoenix\optimal_control_phoenix\codegen\lib\lenkwinkel')">C:\Users\Tobias\Google Drive\Uni\Phoenix\optimal_control_phoenix\codegen\lib\lenkwinkel</a></td></tr>
+<td align="left" valign="top" class="td-linebottomrt-link"><a href="matlab: cd('C:\Users\Tobias\Google Drive\Uni\Phoenix\optimal_control\codegen\lib\lenkwinkel')">C:\Users\Tobias\Google Drive\Uni\Phoenix\optimal_control\codegen\lib\lenkwinkel</a></td></tr>
 <tr><td align="left" valign="top" class="td-linebottomrt">Make wrapper</td>
 <td align="left" valign="top" class="td-linebottomrt-link">.\lenkwinkel_rtw.bat</td></tr>
 <tr><td align="left" valign="top" class="td-linebottomrt">Make command</td>

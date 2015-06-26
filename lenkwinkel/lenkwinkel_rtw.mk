@@ -2,7 +2,7 @@
 ## Makefile generated for MATLAB file/project 'lenkwinkel'. 
 ## 
 ## Makefile     : lenkwinkel_rtw.mk
-## Generated on : Mon Jun 15 17:03:29 2015
+## Generated on : Fri Jun 26 19:58:45 2015
 ## MATLAB Coder version: 2.7 (R2014b)
 ## 
 ## Build Info:

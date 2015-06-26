@@ -2,7 +2,7 @@
  * File: _coder_lenkwinkel_info.c
  *
  * MATLAB Coder version            : 2.7
- * C/C++ source code generated on  : 15-Jun-2015 17:03:28
+ * C/C++ source code generated on  : 26-Jun-2015 19:58:43
  */
 
 /* Include Files */
@@ -98,7 +98,7 @@ static void info_helper(const mxArray **info)
   const mxArray *rhs30 = NULL;
   const mxArray *lhs30 = NULL;
   emlrtAddField(*info, emlrt_marshallOut(
-    "[E]C:/Users/Tobias/Google Drive/Uni/Phoenix/optimal_control_phoenix/lenkwinkel.m"),
+    "[E]C:/Users/Tobias/Google Drive/Uni/Phoenix/optimal_control/lenkwinkel.m"),
                 "context", 0);
   emlrtAddField(*info, emlrt_marshallOut("mpower"), "name", 0);
   emlrtAddField(*info, emlrt_marshallOut("double"), "dominantType", 0);
@@ -300,7 +300,7 @@ static void info_helper(const mxArray **info)
   emlrtAddField(*info, emlrtAliasP(rhs12), "rhs", 12);
   emlrtAddField(*info, emlrtAliasP(lhs12), "lhs", 12);
   emlrtAddField(*info, emlrt_marshallOut(
-    "[E]C:/Users/Tobias/Google Drive/Uni/Phoenix/optimal_control_phoenix/lenkwinkel.m"),
+    "[E]C:/Users/Tobias/Google Drive/Uni/Phoenix/optimal_control/lenkwinkel.m"),
                 "context", 13);
   emlrtAddField(*info, emlrt_marshallOut("sqrt"), "name", 13);
   emlrtAddField(*info, emlrt_marshallOut("double"), "dominantType", 13);
@@ -344,7 +344,7 @@ static void info_helper(const mxArray **info)
   emlrtAddField(*info, emlrtAliasP(rhs15), "rhs", 15);
   emlrtAddField(*info, emlrtAliasP(lhs15), "lhs", 15);
   emlrtAddField(*info, emlrt_marshallOut(
-    "[E]C:/Users/Tobias/Google Drive/Uni/Phoenix/optimal_control_phoenix/lenkwinkel.m"),
+    "[E]C:/Users/Tobias/Google Drive/Uni/Phoenix/optimal_control/lenkwinkel.m"),
                 "context", 16);
   emlrtAddField(*info, emlrt_marshallOut("exp"), "name", 16);
   emlrtAddField(*info, emlrt_marshallOut("double"), "dominantType", 16);
@@ -374,7 +374,7 @@ static void info_helper(const mxArray **info)
   emlrtAddField(*info, emlrtAliasP(rhs17), "rhs", 17);
   emlrtAddField(*info, emlrtAliasP(lhs17), "lhs", 17);
   emlrtAddField(*info, emlrt_marshallOut(
-    "[E]C:/Users/Tobias/Google Drive/Uni/Phoenix/optimal_control_phoenix/lenkwinkel.m"),
+    "[E]C:/Users/Tobias/Google Drive/Uni/Phoenix/optimal_control/lenkwinkel.m"),
                 "context", 18);
   emlrtAddField(*info, emlrt_marshallOut("mrdivide"), "name", 18);
   emlrtAddField(*info, emlrt_marshallOut("double"), "dominantType", 18);
@@ -478,7 +478,7 @@ static void info_helper(const mxArray **info)
   emlrtAddField(*info, emlrtAliasP(rhs24), "rhs", 24);
   emlrtAddField(*info, emlrtAliasP(lhs24), "lhs", 24);
   emlrtAddField(*info, emlrt_marshallOut(
-    "[E]C:/Users/Tobias/Google Drive/Uni/Phoenix/optimal_control_phoenix/lenkwinkel.m"),
+    "[E]C:/Users/Tobias/Google Drive/Uni/Phoenix/optimal_control/lenkwinkel.m"),
                 "context", 25);
   emlrtAddField(*info, emlrt_marshallOut("sin"), "name", 25);
   emlrtAddField(*info, emlrt_marshallOut("double"), "dominantType", 25);
@@ -508,7 +508,7 @@ static void info_helper(const mxArray **info)
   emlrtAddField(*info, emlrtAliasP(rhs26), "rhs", 26);
   emlrtAddField(*info, emlrtAliasP(lhs26), "lhs", 26);
   emlrtAddField(*info, emlrt_marshallOut(
-    "[E]C:/Users/Tobias/Google Drive/Uni/Phoenix/optimal_control_phoenix/lenkwinkel.m"),
+    "[E]C:/Users/Tobias/Google Drive/Uni/Phoenix/optimal_control/lenkwinkel.m"),
                 "context", 27);
   emlrtAddField(*info, emlrt_marshallOut("cos"), "name", 27);
   emlrtAddField(*info, emlrt_marshallOut("double"), "dominantType", 27);
@@ -538,7 +538,7 @@ static void info_helper(const mxArray **info)
   emlrtAddField(*info, emlrtAliasP(rhs28), "rhs", 28);
   emlrtAddField(*info, emlrtAliasP(lhs28), "lhs", 28);
   emlrtAddField(*info, emlrt_marshallOut(
-    "[E]C:/Users/Tobias/Google Drive/Uni/Phoenix/optimal_control_phoenix/lenkwinkel.m"),
+    "[E]C:/Users/Tobias/Google Drive/Uni/Phoenix/optimal_control/lenkwinkel.m"),
                 "context", 29);
   emlrtAddField(*info, emlrt_marshallOut("atan"), "name", 29);
   emlrtAddField(*info, emlrt_marshallOut("double"), "dominantType", 29);
@@ -679,9 +679,9 @@ mxArray *emlrtMexFcnProperties()
   mxArray *xResult = mxCreateStructMatrix(1,1,4,mexProperties);
   mxArray *xEntryPoints = mxCreateStructMatrix(1,1,4,epProperties);
   mxArray *xInputs = NULL;
-  xInputs = mxCreateLogicalMatrix(1, 3);
+  xInputs = mxCreateLogicalMatrix(1, 4);
   mxSetFieldByNumber(xEntryPoints, 0, 0, mxCreateString("lenkwinkel"));
-  mxSetFieldByNumber(xEntryPoints, 0, 1, mxCreateDoubleScalar(3));
+  mxSetFieldByNumber(xEntryPoints, 0, 1, mxCreateDoubleScalar(4));
   mxSetFieldByNumber(xEntryPoints, 0, 2, mxCreateDoubleScalar(2));
   mxSetFieldByNumber(xEntryPoints, 0, 3, xInputs);
   mxSetFieldByNumber(xResult, 0, 0, mxCreateString("8.4.0.150421 (R2014b)"));

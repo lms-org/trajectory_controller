@@ -20,7 +20,7 @@ void *emlrtRootTLSGlobal = NULL;
 static void lenkwinkel_mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 {
   const mxArray *outputs[2];
-  const mxArray *inputs[3];
+  const mxArray *inputs[4];
   int n = 0;
   int nOutputs = (nlhs < 1 ? 1 : nlhs);
   int nInputs = nrhs;
@@ -29,8 +29,8 @@ static void lenkwinkel_mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mx
   lenkwinkel_initialize(&emlrtContextGlobal);
   st.tls = emlrtRootTLSGlobal;
   /* Check for proper number of arguments. */
-  if (nrhs != 3) {
-    emlrtErrMsgIdAndTxt(&st, "EMLRT:runTime:WrongNumberOfInputs", 5, mxINT32_CLASS, 3, mxCHAR_CLASS, 10, "lenkwinkel");
+  if (nrhs != 4) {
+    emlrtErrMsgIdAndTxt(&st, "EMLRT:runTime:WrongNumberOfInputs", 5, mxINT32_CLASS, 4, mxCHAR_CLASS, 10, "lenkwinkel");
   } else if (nlhs > 2) {
     emlrtErrMsgIdAndTxt(&st, "EMLRT:runTime:TooManyOutputArguments", 3, mxCHAR_CLASS, 10, "lenkwinkel");
   }

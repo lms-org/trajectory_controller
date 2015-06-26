@@ -23,6 +23,7 @@ private:
     double delta_v(double y_s, double phi_s, double te, double dh);
 
     const std::pair<lms::math::vertex2f, lms::math::vertex2f> *trajectoryPoint;
+    const lms::type::ModuleConfig *config;
     sensor_utils::Car *car;
 };
 
