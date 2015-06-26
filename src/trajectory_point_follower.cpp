@@ -36,7 +36,7 @@ void TrajectoryPointController::positionController(){
         delta_hinten = 0;
     }
     car->steering_front = delta_vorne; // * 180. / M_PI;
-    car->steering_rear = -delta_hinten; // * 180. / M_PI;
+    car->steering_rear = delta_hinten; // * 180. / M_PI;
 }
 
 
