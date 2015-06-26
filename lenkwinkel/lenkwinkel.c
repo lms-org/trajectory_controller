@@ -8,7 +8,7 @@
 /* Include Files */
 #include "rt_nonfinite.h"
 #include "lenkwinkel.h"
-
+#include <stdio.h>
 /* Function Definitions */
 
 /*
@@ -27,6 +27,7 @@ void lenkwinkel(double x_s, double y_s, double phi_s, unsigned char chooser,
   s = sqrt(x_s * x_s + y_s * y_s);
   *delta_h = 0.0;
   *delta_v = 0.0;
+  printf("chooser: %d \n",chooser);
   if (chooser == 1) {
     *delta_h = -(0.01333 * (((((((6.603E+8 * phi_s * (s * s) * exp(6.189 * s) -
       2.211E+9 * (s * s) * y_s * exp(6.189 * s)) - 6.603E+8 * phi_s * (s * s) *

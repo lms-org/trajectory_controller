@@ -28,9 +28,10 @@ void TrajectoryPointController::positionController(){
     double delta_hinten;
     double delta_vorne;
 
-    lenkwinkel(x_soll, y_soll, phi_soll,config->get<char>("regler",1), &delta_hinten,
+    lenkwinkel(x_soll, y_soll, phi_soll,config->get<int>("regler",1), &delta_hinten,
       &delta_vorne);
 
+    logger.debug("positionController")<<delta_vorne<<" "<<delta_hinten;
     if(isnan(delta_vorne) || isnan(delta_hinten) ){
         logger.error("positionController: ")<<"invalid vals: " <<delta_vorne <<" " <<delta_hinten ;
         delta_vorne = 0;
