@@ -37,8 +37,12 @@ void TrajectoryPointController::positionController(){
         delta_vorne = 0;
         delta_hinten = 0;
     }
-    car->steering_front = delta_vorne; // * 180. / M_PI;
-    car->steering_rear = delta_hinten; // * 180. / M_PI;
+    //set the default state
+    sensor_utils::Car::State state;
+    state.name = "DEFAULT";
+    state.steering_front = delta_vorne; // * 180. / M_PI;
+    state.steering_rear = delta_hinten; // * 180. / M_PI;
+    car->putState(state);
 }
 
 
