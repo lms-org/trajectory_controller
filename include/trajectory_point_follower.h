@@ -22,9 +22,9 @@ private:
     double delta_h(double y_s, double phi_s, double te);
     double delta_v(double y_s, double phi_s, double te, double dh);
 
-    const std::pair<lms::math::vertex2f, lms::math::vertex2f> *trajectoryPoint;
+    lms::ReadDataChannel<std::pair<lms::math::vertex2f, lms::math::vertex2f>> trajectoryPoint;
     const lms::ModuleConfig *config;
-    sensor_utils::Car *car;
+    lms::WriteDataChannel<sensor_utils::Car> car;
 };
 
 #endif /* IMAGE_HINT_TRANSFORMER_H */

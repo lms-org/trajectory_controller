@@ -5,7 +5,7 @@ extern "C"{
 #include <cmath>
 bool TrajectoryPointController::initialize() {
     config = getConfig();
-    trajectoryPoint = datamanager()->writeChannel<std::pair<lms::math::vertex2f,lms::math::vertex2f>>(this,"POINT");
+    trajectoryPoint = datamanager()->readChannel<std::pair<lms::math::vertex2f,lms::math::vertex2f>>(this,"POINT");
     car = datamanager()->writeChannel<sensor_utils::Car>(this,"CAR");
     return true;
 }
