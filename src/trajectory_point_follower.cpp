@@ -7,7 +7,6 @@ extern "C"{
 
 
 bool TrajectoryPointController::initialize() {
-    config = getConfig();
     trajectoryPoint = datamanager()->readChannel<std::pair<lms::math::vertex2f,lms::math::vertex2f>>(this,"POINT");
     car = datamanager()->writeChannel<sensor_utils::Car>(this,"CAR");
 
@@ -15,7 +14,6 @@ bool TrajectoryPointController::initialize() {
     double alpha_max = 32*M_PI/180;
     lower = -alpha_max, -alpha_max;
     upper =  alpha_max,  alpha_max;
-
     return true;
 }
 
@@ -26,10 +24,10 @@ bool TrajectoryPointController::deinitialize() {
 bool TrajectoryPointController::cycle() {
 
     //TODO von config einlesen, um live einzustellen
-    mpcParameters.weight_y = 3;
-    mpcParameters.weight_phi = 3;
-    mpcParameters.weight_steeringFront = 1;
-    mpcParameters.weight_steeringRear = 1;
+    mpcParameters.weight_y = config().get<double>("weight_y",3);
+    mpcParameters.weight_phi = config().get<double>("weight_phi",3);
+    mpcParameters.weight_steeringFront = config().get<double>("weight_steering_front",1);
+    mpcParameters.weight_steeringRear = config().get<double>("weight_steering_rear",1);
 
     double T = 0.1; //Zeitschrittgroesse fuer MPC
 
@@ -161,7 +159,7 @@ void TrajectoryPointController::positionController(){
     double delta_hinten;
     double delta_vorne;
 
-    lenkwinkel(x_soll, y_soll, phi_soll,config->get<int>("regler",1), &delta_hinten,
+    lenkwinkel(x_soll, y_soll, phi_soll,config().get<int>("regler",1), &delta_hinten,
       &delta_vorne);
 
     logger.debug("positionController")<<delta_vorne<<" "<<delta_hinten;

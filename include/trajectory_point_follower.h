@@ -38,7 +38,6 @@ private:
     dlib::matrix<double,2,1> lower, upper;
 
     lms::ReadDataChannel<std::pair<lms::math::vertex2f, lms::math::vertex2f>> trajectoryPoint;
-    const lms::ModuleConfig *config;
     lms::WriteDataChannel<sensor_utils::Car> car;
 
     //simulation
