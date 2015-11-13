@@ -32,6 +32,7 @@ private:
     struct MpcParameters
     {
       double weight_y, weight_phi, weight_steeringFront, weight_steeringRear;
+      static constexpr size_t HORIZON = 20;
     } mpcParameters;
 
     dlib::matrix<double,2,1> lower, upper;

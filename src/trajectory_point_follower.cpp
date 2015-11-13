@@ -60,7 +60,7 @@ bool TrajectoryPointController::cycle() {
     // Zeitmessung
     /*clock_t start = clock();
     for(int i=0; i < 1000; ++i) {
-        mpcController(T, v, delta_y, delta_phi, &steering_front, &steering_rear);
+        mpcController(T, v, y_soll, phi_soll, &steering_front, &steering_rear);
     }
     logger.debug("trajectory_point_controller") << "elapsed time: " << (double)(clock()-start)/CLOCKS_PER_SEC*1000;*/
 
@@ -128,7 +128,7 @@ void TrajectoryPointController::mpcController(double T, double v, double delta_y
     R = mpcParameters.weight_steeringFront, mpcParameters.weight_steeringRear;
 
 
-    dlib::mpc<STATES,CONTROLS,30> controller(A,B,C,Q,R,lower,upper); //30*T ist der Zeithorizont fuer die praediktion, d.h. 30 Zeitschritte wird in die Zukunft simuliert
+    dlib::mpc<STATES,CONTROLS,mpcParameters.HORIZON> controller(A,B,C,Q,R,lower,upper); //30*T ist der Zeithorizont fuer die praediktion, d.h. 30 Zeitschritte wird in die Zukunft simuliert
 
     dlib::matrix<double,STATES,1> target;
     target = delta_y, delta_phi;
