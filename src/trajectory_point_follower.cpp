@@ -24,22 +24,24 @@ bool TrajectoryPointController::deinitialize() {
 
 bool TrajectoryPointController::cycle() {
 
-    //TODO von config einlesen, um live einzustellen
-    mpcParameters.weight_y = config().get<double>("weight_y",3);
-    mpcParameters.weight_phi = config().get<double>("weight_phi",3);
-    mpcParameters.weight_steeringFront = config().get<double>("weight_steering_front",1);
-    mpcParameters.weight_steeringRear = config().get<double>("weight_steering_rear",1);
-    mpcParameters.stepSize = 0.1; //Zeitschrittgroesse fuer MPC
 
-    double phi_soll = atan2(trajectoryPoint->second.y, trajectoryPoint->second.x);
-    double y_soll = trajectoryPoint->first.y;
     //double v = sensor_utils::Car::velocity();
     double v = 1;
 
     double steering_front, steering_rear;
-    mpcController(v, y_soll, phi_soll, &steering_front, &steering_rear);
-
-
+    if(config().get<bool>("useNew",false)){
+            //von config einlesen, um live einzustellen
+           mpcParameters.weight_y = config().get<double>("weight_y",3);
+           mpcParameters.weight_phi = config().get<double>("weight_phi",3);
+           mpcParameters.weight_steeringFront = config().get<double>("weight_steering_front",1);
+           mpcParameters.weight_steeringRear = config().get<double>("weight_steering_rear",1);
+           mpcParameters.stepSize = 0.1; //Zeitschrittgroesse fuer MPC
+        mpcController(v, y_soll, phi_soll, &steering_front, &steering_rear);
+    }else{
+        double phi_soll = atan2(trajectoryPoint->second.y, trajectoryPoint->second.x);
+        double y_soll = trajectoryPoint->first.y;
+        lenkwinkel(0.3,y_soll,phi_soll,1,&steering_rear,&steering_front);
+    }
     logger.debug("trajectory_point_controller") << "lw vorne: " << steering_front << "  lw hinten: " << steering_rear;
     if(isnan(steering_front) || isnan(steering_rear) ){
         logger.error("trajectory_point_controller: ")<<"invalid vals: " <<steering_front <<" " <<steering_rear ;
