@@ -22,22 +22,14 @@ bool TrajectoryPointController::deinitialize() {
 }
 
 bool TrajectoryPointController::cycle() {
-
-    //TODO von config einlesen, um live einzustellen
+    logger.time("CYCLE_TIME");
+    //von config einlesen, um live einzustellen
     mpcParameters.weight_y = config().get<double>("weight_y",3);
     mpcParameters.weight_phi = config().get<double>("weight_phi",3);
     mpcParameters.weight_steeringFront = config().get<double>("weight_steering_front",1);
     mpcParameters.weight_steeringRear = config().get<double>("weight_steering_rear",1);
 
     double T = 0.1; //Zeitschrittgroesse fuer MPC
-
-    //Simulation
-    /*double v = 1;
-    double xf = 0.5;
-    double y0 = 1;
-    double lambda = xf/cos(phi) + x - tan(phi)*(y0-y);
-    double delta_y = x*sin(phi) + cos(phi)*(y0-y)-lambda*sin(phi);
-    double delta_phi = -phi;*/
 
     double phi_soll = atan2(trajectoryPoint->second.y, trajectoryPoint->second.x);
     double y_soll = trajectoryPoint->first.y;
@@ -46,22 +38,6 @@ bool TrajectoryPointController::cycle() {
 
     double steering_front, steering_rear;
     mpcController(T, v, y_soll, phi_soll, &steering_front, &steering_rear);
-
-
-    // Simulation
-    /*std::cout << steering_front <<";" << steering_rear << "\n";
-    x = x + T*v*cos(steering_rear + phi);
-    y = y + T*v*sin(steering_rear + phi);
-    phi = phi + T*v/0.21*sin(steering_front - steering_rear)/cos(steering_rear);*/
-
-
-    // Zeitmessung
-    /*clock_t start = clock();
-    for(int i=0; i < 1000; ++i) {
-        mpcController(T, v, y_soll, phi_soll, &steering_front, &steering_rear);
-    }
-    logger.debug("trajectory_point_controller") << "elapsed time: " << (double)(clock()-start)/CLOCKS_PER_SEC*1000;*/
-
 
     logger.debug("trajectory_point_controller") << "lw vorne: " << steering_front << "  lw hinten: " << steering_rear;
     if(isnan(steering_front) || isnan(steering_rear) ){
@@ -74,6 +50,7 @@ bool TrajectoryPointController::cycle() {
     state.steering_front = steering_front; // * 180. / M_PI;
     state.steering_rear = steering_rear; // * 180. / M_PI;
     car->putState(state);
+    logger.timeEnd("CYCLE_TIME");
 
     return true;
 }
