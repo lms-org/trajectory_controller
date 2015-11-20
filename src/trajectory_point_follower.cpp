@@ -14,6 +14,7 @@ bool TrajectoryPointController::initialize() {
     double alpha_max = 32*M_PI/180;
     lower = -alpha_max, -alpha_max;
     upper =  alpha_max,  alpha_max;
+
     return true;
 }
 
@@ -22,14 +23,13 @@ bool TrajectoryPointController::deinitialize() {
 }
 
 bool TrajectoryPointController::cycle() {
-    logger.time("CYCLE_TIME");
-    //von config einlesen, um live einzustellen
+
+    //TODO von config einlesen, um live einzustellen
     mpcParameters.weight_y = config().get<double>("weight_y",3);
     mpcParameters.weight_phi = config().get<double>("weight_phi",3);
     mpcParameters.weight_steeringFront = config().get<double>("weight_steering_front",1);
     mpcParameters.weight_steeringRear = config().get<double>("weight_steering_rear",1);
-
-    double T = 0.1; //Zeitschrittgroesse fuer MPC
+    mpcParameters.stepSize = 0.1; //Zeitschrittgroesse fuer MPC
 
     double phi_soll = atan2(trajectoryPoint->second.y, trajectoryPoint->second.x);
     double y_soll = trajectoryPoint->first.y;
@@ -37,7 +37,8 @@ bool TrajectoryPointController::cycle() {
     double v = 1;
 
     double steering_front, steering_rear;
-    mpcController(T, v, y_soll, phi_soll, &steering_front, &steering_rear);
+    mpcController(v, y_soll, phi_soll, &steering_front, &steering_rear);
+
 
     logger.debug("trajectory_point_controller") << "lw vorne: " << steering_front << "  lw hinten: " << steering_rear;
     if(isnan(steering_front) || isnan(steering_rear) ){
@@ -50,15 +51,15 @@ bool TrajectoryPointController::cycle() {
     state.steering_front = steering_front; // * 180. / M_PI;
     state.steering_rear = steering_rear; // * 180. / M_PI;
     car->putState(state);
-    logger.timeEnd("CYCLE_TIME");
 
     return true;
 }
 
-void TrajectoryPointController::mpcController(double T, double v, double delta_y, double delta_phi, double *steering_front, double *steering_rear) {
+void TrajectoryPointController::mpcController(double v, double delta_y, double delta_phi, double *steering_front, double *steering_rear) {
 
     const int STATES = 2;
     const int CONTROLS = 2;
+    double T = mpcParameters.stepSize;
 
     // Modell festlegen
     // x_{i+1} == A*x_i + B*u_i + C

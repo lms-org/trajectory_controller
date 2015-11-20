@@ -22,16 +22,17 @@ private:
 
     void positionController();
     void positionControllerVel();
-    void mpcController(double T, double v, double delta_y, double delta_phi, double *steering_front, double *steering_rear);
+    void mpcController(double v, double delta_y, double delta_phi, double *steering_front, double *steering_rear);
     double delta_c_h(double phi_s, double te, double v, double y_s);
     double delta_c_v(double phi_s, double te, double v, double y_s, double dh);
     double delta_h(double y_s, double phi_s, double te);
     double delta_v(double y_s, double phi_s, double te, double dh);
 
     double l = 0.21; //Radstand
+
     struct MpcParameters
     {
-      double weight_y, weight_phi, weight_steeringFront, weight_steeringRear;
+      double weight_y, weight_phi, weight_steeringFront, weight_steeringRear, stepSize;
       static constexpr size_t HORIZON = 20;
     } mpcParameters;
 
@@ -40,8 +41,6 @@ private:
     lms::ReadDataChannel<std::pair<lms::math::vertex2f, lms::math::vertex2f>> trajectoryPoint;
     lms::WriteDataChannel<sensor_utils::Car> car;
 
-    //simulation
-    //double x=0, y=0, phi=0;
 
 };
 
