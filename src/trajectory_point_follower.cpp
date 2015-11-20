@@ -26,7 +26,9 @@ bool TrajectoryPointController::cycle() {
 
 
     //double v = sensor_utils::Car::velocity();
-    double v = 1;
+    double v = 1; //TODO
+    double phi_soll = atan2(trajectoryPoint->second.y, trajectoryPoint->second.x);
+    double y_soll = trajectoryPoint->first.y;
 
     double steering_front, steering_rear;
     if(config().get<bool>("useNew",false)){
@@ -36,10 +38,8 @@ bool TrajectoryPointController::cycle() {
            mpcParameters.weight_steeringFront = config().get<double>("weight_steering_front",1);
            mpcParameters.weight_steeringRear = config().get<double>("weight_steering_rear",1);
            mpcParameters.stepSize = 0.1; //Zeitschrittgroesse fuer MPC
-        mpcController(v, y_soll, phi_soll, &steering_front, &steering_rear);
+            mpcController(v, y_soll, phi_soll, &steering_front, &steering_rear);
     }else{
-        double phi_soll = atan2(trajectoryPoint->second.y, trajectoryPoint->second.x);
-        double y_soll = trajectoryPoint->first.y;
         lenkwinkel(0.3,y_soll,phi_soll,1,&steering_rear,&steering_front);
     }
     logger.debug("trajectory_point_controller") << "lw vorne: " << steering_front << "  lw hinten: " << steering_rear;
