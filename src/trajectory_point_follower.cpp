@@ -45,11 +45,18 @@ bool TrajectoryPointController::cycle() {
     }
 
     //set the default state
+    sensor_utils::Car::State *tmp = car->getState("DEFAULT");
     sensor_utils::Car::State state;
+    if(tmp){
+        state = *tmp;
+    }
+    state.priority = 10;
     state.name = "DEFAULT";
     state.steering_front = steering_front; // * 180. / M_PI;
     state.steering_rear = steering_rear; // * 180. / M_PI;
     car->putState(state);
+    logger.error("WASD")<< steering_front << " "<<steering_rear;
+    logger.error("TEST")<<car->states.size()<<" "<<car->steeringFront() << " "<<car->steeringRear() <<" "<< car->targetSpeed();
     logger.timeEnd("CYCLE_TIME");
 
     return true;
