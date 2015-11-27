@@ -31,12 +31,12 @@ bool TrajectoryPointController::cycle() {
     double y_soll = trajectoryPoint->first.y;
 
     double steering_front, steering_rear;
-    if(config().get<bool>("useNew",false)){
+    if(config().get<bool>("useMPCcontroller",1)){
             //von config einlesen, um live einzustellen
            mpcParameters.weight_y = config().get<double>("weight_y",3);
            mpcParameters.weight_phi = config().get<double>("weight_phi",3);
-           mpcParameters.weight_steeringFront = config().get<double>("weight_steering_front",1);
-           mpcParameters.weight_steeringRear = config().get<double>("weight_steering_rear",1);
+           mpcParameters.weight_steeringFront = config().get<double>("weight_steering_front",0.03);
+           mpcParameters.weight_steeringRear = config().get<double>("weight_steering_rear",3);
            mpcParameters.stepSize = 0.1; //Zeitschrittgroesse fuer MPC
             mpcController(v, y_soll, phi_soll, &steering_front, &steering_rear);
     }else{
