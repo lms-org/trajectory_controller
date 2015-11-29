@@ -29,11 +29,11 @@ private:
     double delta_v(double y_s, double phi_s, double te, double dh);
 
     double l = 0.21; //Radstand
+    static constexpr size_t MPC_HORIZON = 20;
 
     struct MpcParameters
     {
-      double weight_y, weight_phi, weight_steeringFront, weight_steeringRear, stepSize;
-      static constexpr size_t HORIZON = 20;
+        double weight_y, weight_phi, weight_steeringFront, weight_steeringRear, stepSize;
     } mpcParameters;
 
     dlib::matrix<double,2,1> lower, upper;

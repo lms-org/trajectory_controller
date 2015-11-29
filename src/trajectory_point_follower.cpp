@@ -110,7 +110,7 @@ void TrajectoryPointController::mpcController(double v, double delta_y, double d
     R = mpcParameters.weight_steeringFront, mpcParameters.weight_steeringRear;
 
 
-    dlib::mpc<STATES,CONTROLS,mpcParameters.HORIZON> controller(A,B,C,Q,R,lower,upper); //30*T ist der Zeithorizont fuer die praediktion, d.h. 30 Zeitschritte wird in die Zukunft simuliert
+    dlib::mpc<STATES,CONTROLS,MPC_HORIZON> controller(A,B,C,Q,R,lower,upper); //30*T ist der Zeithorizont fuer die praediktion, d.h. 30 Zeitschritte wird in die Zukunft simuliert
 
     dlib::matrix<double,STATES,1> target;
     target = delta_y, delta_phi;
