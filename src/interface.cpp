@@ -1,9 +1,3 @@
 #include "trajectory_point_follower.h"
 
-extern "C" {
-
-void* getInstance() {
-    return new TrajectoryPointController();
-}
-
-}
+LMS_MODULE_INTERFACE(TrajectoryPointController)

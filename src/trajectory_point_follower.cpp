@@ -7,8 +7,8 @@ extern "C"{
 
 
 bool TrajectoryPointController::initialize() {
-    trajectoryPoint = datamanager()->readChannel<std::pair<lms::math::vertex2f,lms::math::vertex2f>>(this,"POINT");
-    car = datamanager()->writeChannel<sensor_utils::Car>(this,"CAR");
+    trajectoryPoint = readChannel<std::pair<lms::math::vertex2f,lms::math::vertex2f>>("POINT");
+    car = writeChannel<sensor_utils::Car>("CAR");
 
     //Stellgroessenbeschraenkung
     double alpha_max = 32*M_PI/180;
