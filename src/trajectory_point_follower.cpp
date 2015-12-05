@@ -11,7 +11,7 @@ bool TrajectoryPointController::initialize() {
     car = datamanager()->writeChannel<sensor_utils::Car>(this,"CAR");
 
     //Stellgroessenbeschraenkung
-    double alpha_max = 32*M_PI/180;
+    double alpha_max = 22*M_PI/180;
     lower = -alpha_max, -alpha_max;
     upper =  alpha_max,  alpha_max;
 
@@ -55,8 +55,8 @@ bool TrajectoryPointController::cycle() {
     }
     state.priority = 10;
     state.name = "DEFAULT";
-    state.steering_front = steering_front; // * 180. / M_PI;
-    state.steering_rear = steering_rear; // * 180. / M_PI;
+    state.steering_front = -steering_front; // * 180. / M_PI;
+    state.steering_rear = -steering_rear; // * 180. / M_PI;
     car->putState(state);
     return true;
 }
