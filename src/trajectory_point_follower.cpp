@@ -7,7 +7,7 @@ extern "C"{
 
 
 bool TrajectoryPointController::initialize() {
-    trajectoryPoint = readChannel<std::pair<lms::math::vertex2f,lms::math::vertex2f>>("POINT");
+    trajectoryPoint = readChannel<street_environment::TrajectoryPoint>("POINT");
     car = writeChannel<sensor_utils::Car>("CAR");
 
     //Stellgroessenbeschraenkung
@@ -27,8 +27,8 @@ bool TrajectoryPointController::cycle() {
 
     //double v = sensor_utils::Car::velocity();
     double v = 1; //TODO
-    double phi_soll = atan2(trajectoryPoint->second.y, trajectoryPoint->second.x);
-    double y_soll = trajectoryPoint->first.y;
+    double phi_soll = atan2(trajectoryPoint->directory.y, trajectoryPoint->directory.x);
+    double y_soll = trajectoryPoint->position.y;
 
     double steering_front, steering_rear;
     if(config().get<bool>("useMPCcontroller",1)){
@@ -136,9 +136,9 @@ void TrajectoryPointController::mpcController(double v, double delta_y, double d
 
 
 void TrajectoryPointController::positionController(){
-    double phi_soll = atan2(trajectoryPoint->second.y, trajectoryPoint->second.x);
-    double y_soll = trajectoryPoint->first.y;
-    double x_soll = trajectoryPoint->first.x;
+    double phi_soll = atan2(trajectoryPoint->directory.y, trajectoryPoint->directory.x);
+    double y_soll = trajectoryPoint->position.y;
+    double x_soll = trajectoryPoint->position.x;
 
     double delta_hinten;
     double delta_vorne;

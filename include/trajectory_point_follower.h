@@ -7,6 +7,7 @@
 
 #include "comm/senseboard.h"
 #include "sensor_utils/car.h"
+#include "street_environment/trajectory.h"
 
 #include <dlib/control.h>
 
@@ -38,7 +39,7 @@ private:
 
     dlib::matrix<double,2,1> lower, upper;
 
-    lms::ReadDataChannel<std::pair<lms::math::vertex2f, lms::math::vertex2f>> trajectoryPoint;
+    lms::ReadDataChannel<street_environment::TrajectoryPoint> trajectoryPoint;
     lms::WriteDataChannel<sensor_utils::Car> car;
 
 
