@@ -21,7 +21,9 @@ public:
     bool cycle() override;
 private:
 
-    void positionController();
+    street_environment::TrajectoryPoint getTrajectoryPoint();
+
+    void positionController(street_environment::TrajectoryPoint &trajectoryPoint);
     void positionControllerVel();
     void mpcController(double v, double delta_y, double delta_phi, double *steering_front, double *steering_rear);
     double delta_c_h(double phi_s, double te, double v, double y_s);
@@ -39,8 +41,12 @@ private:
 
     dlib::matrix<double,2,1> lower, upper;
 
-    lms::ReadDataChannel<street_environment::TrajectoryPoint> trajectoryPoint;
+    lms::ReadDataChannel<street_environment::Trajectory> trajectory;
     lms::WriteDataChannel<sensor_utils::Car> car;
+    /**
+     * @brief trajectoryPoint only for debugging
+     */
+    lms::WriteDataChannel<street_environment::TrajectoryPoint> debugging_trajectoryPoint;
 
 
 };
