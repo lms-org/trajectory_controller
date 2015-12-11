@@ -2,7 +2,6 @@
 #define IMAGE_HINT_TRANSFORMER_H
 
 #include "lms/module.h"
-#include "lms/datamanager.h"
 #include "lms/math/vertex.h"
 
 #include "comm/senseboard.h"
