@@ -28,7 +28,11 @@ bool TrajectoryPointController::cycle() {
     street_environment::TrajectoryPoint trajectoryPoint = getTrajectoryPoint();
 
     //double v = sensor_utils::Car::velocity();
-    double v = 1; //TODO
+    double v = car->velocity();
+    if(fabs(v) < 0.1){
+        logger.debug("cycle")<<"velocity is 0";
+        v=0.1;//Some controller has some issue divides by v without error-checking
+    }
     double phi_soll = atan2(trajectoryPoint.directory.y, trajectoryPoint.directory.x);
     double y_soll = trajectoryPoint.position.y;
 
@@ -42,7 +46,7 @@ bool TrajectoryPointController::cycle() {
            mpcParameters.stepSize = 0.1; //Zeitschrittgroesse fuer MPC
             mpcController(v, y_soll, phi_soll, &steering_front, &steering_rear);
     }else{
-        lenkwinkel(0.3,y_soll,phi_soll,1,&steering_rear,&steering_front);
+        lenkwinkel(trajectoryPoint.position.length(),y_soll,phi_soll,1,&steering_rear,&steering_front);
     }
     logger.debug("trajectory_point_controller") << "lw vorne: " << steering_front << "  lw hinten: " << steering_rear;
     if(isnan(steering_front) || isnan(steering_rear) ){
@@ -62,7 +66,7 @@ bool TrajectoryPointController::cycle() {
 
     //set the indicator
     //get the closest change
-    float nextChangeDistance = config.get<float>("indicatorMaxDistance",0.5);
+    float nextChangeDistance = config().get<float>("indicatorMaxDistance",0.5);
     for(const street_environment::Trajectory::RoadChange &change : trajectory->changes){
         float xDistance = trajectory->points()[change.changeRoadIndex].x;
         if(xDistance < config().get<float>("indicatorMinDistance",0)){
