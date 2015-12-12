@@ -25,7 +25,8 @@ bool TrajectoryPointController::deinitialize() {
 }
 
 bool TrajectoryPointController::cycle() {
-    street_environment::TrajectoryPoint trajectoryPoint = getTrajectoryPoint();
+    const float distanceSearched = config().get<float>("distanceSearched", 0.50);
+    street_environment::TrajectoryPoint trajectoryPoint = getTrajectoryPoint(distanceSearched);
 
     //double v = sensor_utils::Car::velocity();
     double v = car->velocity();
@@ -63,7 +64,9 @@ bool TrajectoryPointController::cycle() {
     state.name = "DEFAULT";
     state.steering_front = steering_front; // * 180. / M_PI;
     state.steering_rear = steering_rear; // * 180. / M_PI;
+    state.targetSpeed = targetVelocity();
 
+    logger.debug("positionController")<<"dv: "<<state.steering_front<< " dh"<<state.steering_rear<<" vel: "<<state.targetSpeed;
     //set the indicator
     //get the closest change
     float nextChangeDistance = config().get<float>("indicatorMaxDistance",0.5);
@@ -89,6 +92,34 @@ bool TrajectoryPointController::cycle() {
     //set trajectoryPoint for debugging;
     *debugging_trajectoryPoint = trajectoryPoint;
     return true;
+}
+float TrajectoryPointController::targetVelocity(){
+    float velocity = 0;
+    float maxSpeed = config().get<float>("maxSpeed",1);
+    float minCurveSpeed = config().get<float>("minCurveSpeed",maxSpeed/2);
+    float forcastLength = config().get<float>("forcastLength",1);
+    float circleLength = 2*M_PI/config().get<float>("maxCurvation",1);
+    float maxAngle = 2*M_PI * forcastLength/circleLength ;
+
+    if(forcastLength > trajectory->length()){
+        //road will come to an end
+        //TODO reduce speed
+    }else{
+        //TODO gewichten
+        float currentDistance = 0;
+        float angle = 0;
+        for(int i = 1; i <(int) trajectory->points().size(); i++){
+            lms::math::vertex2f bot = trajectory->points()[i-1];
+            lms::math::vertex2f top = trajectory->points()[i];
+            currentDistance += bot.distance(top);
+            if(currentDistance > forcastLength){
+                break;
+            }
+            angle = fabs(bot.angleBetween(top));
+        }
+        velocity = (minCurveSpeed-maxSpeed)/maxAngle*(angle)+maxSpeed;
+    }
+    return velocity;
 }
 
 void TrajectoryPointController::mpcController(double v, double delta_y, double delta_phi, double *steering_front, double *steering_rear) {
@@ -165,49 +196,28 @@ void TrajectoryPointController::mpcController(double v, double delta_y, double d
 }
 
 
-
-void TrajectoryPointController::positionController(street_environment::TrajectoryPoint &trajectoryPoint){
-    double phi_soll = atan2(trajectoryPoint.directory.y, trajectoryPoint.directory.x);
-    double y_soll = trajectoryPoint.position.y;
-    double x_soll = trajectoryPoint.position.x;
-
-    double delta_hinten;
-    double delta_vorne;
-
-    lenkwinkel(x_soll, y_soll, phi_soll,config().get<int>("regler",1), &delta_hinten,
-      &delta_vorne);
-
-    logger.debug("positionController")<<delta_vorne<<" "<<delta_hinten;
-    if(isnan(delta_vorne) || isnan(delta_hinten) ){
-        logger.error("positionController: ")<<"invalid vals: " <<delta_vorne <<" " <<delta_hinten ;
-        delta_vorne = 0;
-        delta_hinten = 0;
-    }
-    //set the default state
-    sensor_utils::Car::State state;
-    state.name = "DEFAULT";
-    state.steering_front = delta_vorne; // * 180. / M_PI;
-    state.steering_rear = delta_hinten; // * 180. / M_PI;
-    car->putState(state);
-}
-
-street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoint(){
+street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoint(float distanceToPoint){
     street_environment::TrajectoryPoint trajectoryPoint;
-    const float distanceSearched = config().get<float>("distanceSearched", 0.50);
-
     bool found = false;
-    if(trajectory->points().size() < 1){
+    if(trajectory->points().size()  == 0){
         logger.warn("cycle") <<"Can't follow anything";
+    }else if(trajectory->points().size() == 1){
+        //set endPoint
+        found = true;
+        trajectoryPoint.directory = lms::math::vertex2f(1,0);
+        trajectoryPoint.position = trajectory->points()[0];
+        trajectoryPoint.velocity = 0;
+        found = true;
     }
     for(int i = 1; i < (int)trajectory->points().size();i++){
         //TODO put 0.2 in config
         lms::math::vertex2f top = trajectory->points()[i];
         //logger.debug("cycle") << "pos: " << toFollow->points()[i].x() << " " << toFollow->points()[i].y();
-        if(top.x > distanceSearched){
+        if(top.x > distanceToPoint){
             //TODO has to be tested
             //We start at the bottom-point
             lms::math::vertex2f bot = trajectory->points()[i-1];
-            float toGoX = distanceSearched-bot.x;
+            float toGoX = distanceToPoint-bot.x;
             if(toGoX <= 0){
                 //TODO
                 toGoX = 0;
@@ -220,30 +230,28 @@ street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoin
             trajectoryPoint.position.x = bot.x + toGoX*cos(angle);
             //y-Pos
             trajectoryPoint.position.y = bot.y + toGoX*sin(angle);
-
             //x-Dir
             trajectoryPoint.directory.x = cos(angle);
             //y-Dir
             trajectoryPoint.directory.y = sin(angle);
+            trajectoryPoint.velocity = targetVelocity();
             found = true;
             break;
         }
     }
     if(!found){
-        //if we find nothing, we just want to drive forward
+        //if we find nothing, we just want to idle forward
         //x-Pos
-        trajectoryPoint.position.x = distanceSearched;
+        trajectoryPoint.position.x = distanceToPoint;
         //y-Pos
         trajectoryPoint.position.y = 0;
         //x-Dir
         trajectoryPoint.directory.x = 1;
         //y-Dir
         trajectoryPoint.directory.y = 0;
+        trajectoryPoint.velocity = 0;
     }
     return trajectoryPoint;
 }
-
-
-
 
 

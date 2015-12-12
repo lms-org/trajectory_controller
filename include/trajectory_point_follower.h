@@ -20,9 +20,9 @@ public:
     bool cycle() override;
 private:
 
-    street_environment::TrajectoryPoint getTrajectoryPoint();
+    street_environment::TrajectoryPoint getTrajectoryPoint(float distanceToPoint);
 
-    void positionController(street_environment::TrajectoryPoint &trajectoryPoint);
+    float targetVelocity();
     void positionControllerVel();
     void mpcController(double v, double delta_y, double delta_phi, double *steering_front, double *steering_rear);
     double delta_c_h(double phi_s, double te, double v, double y_s);
