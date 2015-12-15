@@ -2,11 +2,11 @@
 #define IMAGE_HINT_TRANSFORMER_H
 
 #include "lms/module.h"
-#include "lms/datamanager.h"
 #include "lms/math/vertex.h"
 
 #include "comm/senseboard.h"
 #include "sensor_utils/car.h"
+#include "street_environment/trajectory.h"
 
 #include <dlib/control.h>
 
@@ -20,7 +20,9 @@ public:
     bool cycle() override;
 private:
 
-    void positionController();
+    street_environment::TrajectoryPoint getTrajectoryPoint(float distanceToPoint);
+
+    float targetVelocity();
     void positionControllerVel();
     void mpcController(double v, double delta_y, double delta_phi, double *steering_front, double *steering_rear);
     double delta_c_h(double phi_s, double te, double v, double y_s);
@@ -38,8 +40,12 @@ private:
 
     dlib::matrix<double,2,1> lower, upper;
 
-    lms::ReadDataChannel<std::pair<lms::math::vertex2f, lms::math::vertex2f>> trajectoryPoint;
+    lms::ReadDataChannel<street_environment::Trajectory> trajectory;
     lms::WriteDataChannel<sensor_utils::Car> car;
+    /**
+     * @brief trajectoryPoint only for debugging
+     */
+    lms::WriteDataChannel<street_environment::TrajectoryPoint> debugging_trajectoryPoint;
 
 
 };
