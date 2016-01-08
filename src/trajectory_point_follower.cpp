@@ -133,6 +133,18 @@ void TrajectoryPointController::mpcController(double v, double delta_y, double d
     // Modell festlegen
     // x_{i+1} == A*x_i + B*u_i + C
 
+    //HACK:
+    //anstatt v konstant zu lassen folgende Idee:
+    //Wenn v größer wird, kann im betrachteten Prädiktionshorizont das Regelziel schneller erreicht werden.
+    //Das führt dann (meiner Meinung nach) tendenziell zu kleineren Lenkwinkeln. Wir wollen aber eigentlich
+    //genau das Gegenteil, nämlich größere Lenkwinkel bei höherer Geschwindigkeit, um Querschlupf entgegenzuwirken.
+    //Lösungsansatz:
+    //Vorgabe einer Grundgeschwindigkeit v0, auf die der Regler bei langsamer Fahrt eingestellt wird.
+    //Dann abhängig von der wirklichen aktuellen Geschwindigkeit Addition eines "Geschwindigkeitsfaktors"
+    // ==> v_regler = v0 + c*v_real
+
+    v = 1 + config().get("velocityFactor", 0.0)*v;
+
     dlib::matrix<double,STATES,STATES> A;
     A = 1, T*v, 0, 1;
 
