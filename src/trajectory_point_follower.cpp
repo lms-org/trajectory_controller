@@ -17,6 +17,9 @@ bool TrajectoryPointController::initialize() {
     lower = -alpha_max, -alpha_max;
     upper =  alpha_max,  alpha_max;
 
+    //myfile.open("mpcData.csv");
+    //v_global = 0.0;
+
     return true;
 }
 
@@ -29,21 +32,32 @@ bool TrajectoryPointController::cycle() {
     street_environment::TrajectoryPoint trajectoryPoint = getTrajectoryPoint(distanceSearched);
 
     //double v = sensor_utils::Car::velocity();
-    double v = car->velocity();
+    double v = car->velocity(); // wird nicht verwendet
     if(fabs(v) < 0.1){
         logger.debug("cycle")<<"velocity is 0";
         v=0.1;//Some controller has some issue divides by v without error-checking
     }
+
+
     double phi_soll = atan2(trajectoryPoint.directory.y, trajectoryPoint.directory.x);
     double y_soll = trajectoryPoint.position.y;
+
+    //debug-----
+    /*v_global += 0.05;
+    v = v_global;
+    logger.debug("v") << v;
+
+    phi_soll = 0.05;
+    y_soll = 0.15;*/
+    //-----------
 
     double steering_front, steering_rear;
     if(config().get<bool>("useMPCcontroller",1)){
             //von config einlesen, um live einzustellen
-           mpcParameters.weight_y = config().get<double>("weight_y",3);
-           mpcParameters.weight_phi = config().get<double>("weight_phi",3);
-           mpcParameters.weight_steeringFront = config().get<double>("weight_steering_front",0.03);
-           mpcParameters.weight_steeringRear = config().get<double>("weight_steering_rear",3);
+           mpcParameters.weight_y = config().get<double>("weight_y",20);
+           mpcParameters.weight_phi = config().get<double>("weight_phi",7);
+           mpcParameters.weight_steeringFront = config().get<double>("weight_steering_front",0.0005);
+           mpcParameters.weight_steeringRear = config().get<double>("weight_steering_rear",10);
            mpcParameters.stepSize = 0.1; //Zeitschrittgroesse fuer MPC
             mpcController(v, y_soll, phi_soll, &steering_front, &steering_rear);
     }else{
@@ -53,6 +67,10 @@ bool TrajectoryPointController::cycle() {
     if(isnan(steering_front) || isnan(steering_rear) ){
         logger.error("trajectory_point_controller: ")<<"invalid vals: " <<steering_front <<" " <<steering_rear ;
     }
+
+    //debug-----
+    //myfile << steering_front << "," << steering_rear << "," << v << std::endl;
+    //----------
 
     //set the default state
     sensor_utils::Car::State *tmp = car->getState("DEFAULT");
@@ -124,10 +142,9 @@ float TrajectoryPointController::targetVelocity(){
 }
 
 void TrajectoryPointController::mpcController(double v, double delta_y, double delta_phi, double *steering_front, double *steering_rear) {
-    //TODO für was sind die beiden?
-    //TODO docs@Tobi
-    const int STATES = 2;
-    const int CONTROLS = 2;
+
+    const int STATES = 2; //number of states (y and phi)
+    const int CONTROLS = 2; //number of control inputs (steering_front and steering_rear)
     double T = mpcParameters.stepSize;
 
     // Modell festlegen
@@ -139,11 +156,14 @@ void TrajectoryPointController::mpcController(double v, double delta_y, double d
     //Das führt dann (meiner Meinung nach) tendenziell zu kleineren Lenkwinkeln. Wir wollen aber eigentlich
     //genau das Gegenteil, nämlich größere Lenkwinkel bei höherer Geschwindigkeit, um Querschlupf entgegenzuwirken.
     //Lösungsansatz:
-    //Vorgabe einer Grundgeschwindigkeit v0, auf die der Regler bei langsamer Fahrt eingestellt wird.
+    //Vorgabe einer Grundgeschwindigkeit v0 (z.B. v0=1), auf die der Regler bei langsamer Fahrt eingestellt wird.
     //Dann abhängig von der wirklichen aktuellen Geschwindigkeit Addition eines "Geschwindigkeitsfaktors"
-    // ==> v_regler = v0 + c*v_real
+    // ==> v_regler = 1 + c*v_real oder alternativ v_regler = exp(-c*v_real)
 
-    v = 1 + config().get("velocityFactor", 0.0)*v;
+    //v = 1 + config().get("velocityFactor", 0.0)*v;
+    if (config().get("velocityFactor", 0.0)) v = std::exp(-v*config().get("velocityFactor", 0.0));
+    else v = 1.0;
+
 
     dlib::matrix<double,STATES,STATES> A;
     A = 1, T*v, 0, 1;

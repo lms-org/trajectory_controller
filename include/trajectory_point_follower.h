@@ -12,6 +12,7 @@
 
 #include <ctime>
 #include <unistd.h>
+#include <fstream>
 
 class TrajectoryPointController : public lms::Module {
 public:
@@ -38,6 +39,8 @@ private:
         double weight_y, weight_phi, weight_steeringFront, weight_steeringRear, stepSize;
     } mpcParameters;
 
+    std::ofstream myfile;
+    double v_global;
     dlib::matrix<double,2,1> lower, upper;
 
     lms::ReadDataChannel<street_environment::Trajectory> trajectory;
