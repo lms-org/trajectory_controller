@@ -83,7 +83,12 @@ bool TrajectoryPointController::cycle() {
 
     state.steering_front = steering_front; // * 180. / M_PI;
     state.steering_rear = steering_rear; // * 180. / M_PI;
-    state.targetSpeed = targetVelocity();
+    state.targetSpeed = trajectoryPoint.velocity;
+    if(trajectoryPoint.velocity == 0){
+        state.state = sensor_utils::Car::StateType::IDLE;
+    }else{
+        state.state = sensor_utils::Car::StateType::DRIVING;
+    }
 
     logger.debug("positionController")<<"dv: "<<state.steering_front<< " dh"<<state.steering_rear<<" vel: "<<state.targetSpeed;
     //set the indicator
@@ -125,6 +130,9 @@ float TrajectoryPointController::targetVelocity(){
         //road will come to an end
         //reduce speed, we drive backwards if we went to far!
         float speed = slowDownCar.pid(trajectory->length()*lms::math::sgn<float>(trajectory->points()[trajectory->points().size()-1].x));
+        if(fabs(speed < config().get<float>("minSpeed",0.1))){
+            speed = 0;
+        }
         return speed;
     }else{
         //reset the PID controller
