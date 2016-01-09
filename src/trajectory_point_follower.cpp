@@ -102,9 +102,14 @@ float TrajectoryPointController::targetVelocity(){
     float maxAngle = 2*M_PI * forcastLength/circleLength ;
 
     if(forcastLength > trajectory->length()){
+        slowDownCar.set(config().get<float>("PID_Kp",1),config().get<float>("PID_Ki",0),config().get<float>("PID_Kd",0),config().get<float>("dt",0.01));
         //road will come to an end
-        //TODO reduce speed
+        //reduce speed, we drive backwards if we went to far!
+        float speed = slowDownCar.pid(trajectory->length()*lms::math::sgn<float>(trajectory->points()[trajectory->points().size()-1].x));
+        return speed;
     }else{
+        //reset the PID controller
+        slowDownCar.reset();
         //TODO gewichten
         float currentDistance = 0;
         float angle = 0;

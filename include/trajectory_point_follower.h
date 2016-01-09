@@ -7,6 +7,7 @@
 #include "comm/senseboard.h"
 #include "sensor_utils/car.h"
 #include "street_environment/trajectory.h"
+#include "sensor_utils/pid_controller.h"
 
 #include <dlib/control.h>
 
@@ -21,6 +22,10 @@ public:
 private:
 
     street_environment::TrajectoryPoint getTrajectoryPoint(float distanceToPoint);
+    /**
+     * @brief slowDownCar used to slow down the car if the trajectory comes to an end
+     */
+    sensor_utils::PID slowDownCar;
 
     float targetVelocity();
     void positionControllerVel();
