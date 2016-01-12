@@ -45,14 +45,16 @@ bool TrajectoryPointController::cycle() {
     //debug-----
     /*v_global += 0.05;
     v = v_global;
-    logger.debug("v") << v;
+    logger.debug("v") << v;*/
 
+    v = 1;
     phi_soll = 0.05;
-    y_soll = 0.15;*/
+    y_soll = 0.15;
     //-----------
 
     double steering_front, steering_rear;
-    if(config().get<bool>("useMPCcontroller",1)){
+    //if(config().get<bool>("useMPCcontroller",1)){
+    if(true) {
             //von config einlesen, um live einzustellen
            mpcParameters.weight_y = config().get<double>("weight_y",20);
            mpcParameters.weight_phi = config().get<double>("weight_phi",7);
@@ -174,8 +176,10 @@ void TrajectoryPointController::mpcController(double v, double delta_y, double d
     // ==> v_regler = 1 + c*v_real oder alternativ v_regler = exp(-c*v_real)
 
     //v = 1 + config().get("velocityFactor", 0.0)*v;
-    if (config().get("velocityFactor", 0.0)) v = std::exp(-v*config().get("velocityFactor", 0.0));
-    else v = 1.0;
+
+    //if (config().get("velocityFactor", 0.0)) v = std::exp(-v*config().get("velocityFactor", 0.0));
+   // else v = 1.0;
+    v = 1.0;
 
 
     dlib::matrix<double,STATES,STATES> A;
