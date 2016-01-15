@@ -47,9 +47,9 @@ bool TrajectoryPointController::cycle() {
     v = v_global;
     logger.debug("v") << v;*/
 
-    v = 1;
-    phi_soll = 0.05;
-    y_soll = 0.15;
+    //v = 1;
+    //phi_soll = 0.05;
+    //y_soll = 0.15;
     //-----------
 
     double steering_front, steering_rear;
