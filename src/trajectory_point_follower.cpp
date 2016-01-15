@@ -53,8 +53,8 @@ bool TrajectoryPointController::cycle() {
     //-----------
 
     double steering_front, steering_rear;
-    //if(config().get<bool>("useMPCcontroller",1)){
-    if(true) {
+
+    if(config().get<bool>("useMPCcontroller",0)){
             //von config einlesen, um live einzustellen
            mpcParameters.weight_y = config().get<double>("weight_y",20);
            mpcParameters.weight_phi = config().get<double>("weight_phi",7);
