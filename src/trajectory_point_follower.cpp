@@ -177,10 +177,9 @@ void TrajectoryPointController::mpcController(double v, double delta_y, double d
 
     //v = 1 + config().get("velocityFactor", 0.0)*v;
 
-    //if (config().get("velocityFactor", 0.0)) v = std::exp(-v*config().get("velocityFactor", 0.0));
-   // else v = 1.0;
-    v = 1.0;
-
+    if (config().get("velocityFactor", 0.0)) v = std::exp(-v*config().get("velocityFactor", 0.0));
+    else v = 1.0;
+    //v = 1.0;
 
     dlib::matrix<double,STATES,STATES> A;
     A = 1, T*v, 0, 1;
@@ -233,13 +232,14 @@ void TrajectoryPointController::mpcController(double v, double delta_y, double d
     //controller.set_epsilon(0.05);
     //controller.set_max_iterations(300);
 
-    dlib::matrix<double,STATES,1> current_state = {0,0};
+    dlib::matrix<double,STATES,1> current_state;
+    current_state = 0, 0;
 
     dlib::matrix<double,CONTROLS,1> action = controller(current_state); //loese MPC Problem
 
 
     *steering_front = action(0,0);
-    *steering_rear = action(0,1);
+    *steering_rear = action(1,0);
 
     return;
 
