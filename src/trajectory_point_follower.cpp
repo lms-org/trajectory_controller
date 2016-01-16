@@ -30,7 +30,6 @@ bool TrajectoryPointController::deinitialize() {
 bool TrajectoryPointController::cycle() {
     const float distanceSearched = config().get<float>("distanceSearched", 0.50);
     street_environment::TrajectoryPoint trajectoryPoint = getTrajectoryPoint(distanceSearched);
-
     //double v = sensor_utils::Car::velocity();
     double v = car->velocity(); // wird nicht verwendet
     if(fabs(v) < 0.1){
@@ -46,10 +45,10 @@ bool TrajectoryPointController::cycle() {
     /*v_global += 0.05;
     v = v_global;
     logger.debug("v") << v;*/
-
+    /*
     v = 1;
     phi_soll = 0.05;
-    y_soll = 0.15;
+    y_soll = 0.15;*/
     //-----------
 
     double steering_front, steering_rear;
@@ -131,11 +130,7 @@ float TrajectoryPointController::targetVelocity(){
         slowDownCar.set(config().get<float>("PID_Kp",1),config().get<float>("PID_Ki",0),config().get<float>("PID_Kd",0),config().get<float>("dt",0.01));
         //road will come to an end
         //reduce speed, we drive backwards if we went to far!
-        float speed = slowDownCar.pid(trajectory->length()*lms::math::sgn<float>(trajectory->points()[trajectory->points().size()-1].x));
-        if(fabs(speed < config().get<float>("minSpeed",0.1))){
-            speed = 0;
-        }
-        return speed;
+        velocity = slowDownCar.pid(trajectory->length()*lms::math::sgn<float>(trajectory->points()[trajectory->points().size()-1].x));
     }else{
         //reset the PID controller
         slowDownCar.reset();
@@ -149,9 +144,16 @@ float TrajectoryPointController::targetVelocity(){
             if(currentDistance > forcastLength){
                 break;
             }
-            angle = fabs(bot.angleBetween(top));
+            if(bot.length() == 0 || top.length()==0){
+                angle = 0;
+            }else{
+                angle = fabs(bot.angleBetween(top));
+            }
         }
         velocity = (minCurveSpeed-maxSpeed)/maxAngle*(angle)+maxSpeed;
+    }
+    if(fabs(velocity < config().get<float>("minSpeed",0.1))){
+        velocity = 0;
     }
     return velocity;
 }
