@@ -9,7 +9,12 @@
 #include "street_environment/trajectory.h"
 #include "sensor_utils/pid_controller.h"
 
-#include <dlib/control.h>
+//http://stackoverflow.com/questions/7159348/disable-single-warning-error
+//http://stackoverflow.com/questions/3378560/how-to-disable-gcc-warnings-for-a-few-lines-of-code
+//#pragma warning (disable : 4068 ) /* disable unknown pragma warnings */
+#pragma GCC diagnostic ignored "-Wpedantic"
+#include <dlib/control.h>         /* no diagnostic for this one */
+#pragma GCC diagnostic pop
 
 #include <ctime>
 #include <unistd.h>

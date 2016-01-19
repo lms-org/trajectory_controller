@@ -122,6 +122,7 @@ float TrajectoryPointController::targetVelocity(){
         //reduce speed, we drive backwards if we went to far!
         velocity = slowDownCar.pid(trajectory->length()*lms::math::sgn<float>(trajectory->points()[trajectory->points().size()-1].x));
     }else{
+        //TODO get the point with the biggest angle -> PID control it
         //reset the PID controller
         slowDownCar.reset();
         //TODO gewichten
