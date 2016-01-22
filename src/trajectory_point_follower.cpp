@@ -55,7 +55,7 @@ bool TrajectoryPointController::cycle() {
         lenkwinkel(trajectoryPoint.position.length(),y_soll,phi_soll,1,&steering_rear,&steering_front);
     }
     logger.debug("trajectory_point_controller") << "lw vorne: " << steering_front << "  lw hinten: " << steering_rear;
-    if(isnan(steering_front) || isnan(steering_rear) ){
+    if(isnan(steering_front) || isnan(steering_rear || isnan(trajectoryPoint.velocity)) ){
         logger.error("trajectory_point_controller: ")<<"invalid vals: " <<steering_front <<" " <<steering_rear ;
     }
 
@@ -113,7 +113,10 @@ float TrajectoryPointController::targetVelocity(){
     float maxSpeed = config().get<float>("maxSpeed",1);
     float minCurveSpeed = config().get<float>("minCurveSpeed",maxSpeed/2);
     float forcastLength = config().get<float>("forcastLength",1);
+    float minForcastLength = config().get<float>("minForcastLength",0.3);
+    float targetForcastLength = config().get<float>("targetForcastLength",0.6);
     float circleLength = 2*M_PI/config().get<float>("maxCurvation",1);
+    float weightMultiplieer = config().get<float>("weightMultiplieer",1);;
     float maxAngle = 2*M_PI * forcastLength/circleLength ;
 
     if(forcastLength > trajectory->length()){
@@ -122,28 +125,38 @@ float TrajectoryPointController::targetVelocity(){
         //reduce speed, we drive backwards if we went to far!
         velocity = slowDownCar.pid(trajectory->length()*lms::math::sgn<float>(trajectory->points()[trajectory->points().size()-1].x));
     }else{
-        //TODO get the point with the biggest angle -> PID control it
         //reset the PID controller
         slowDownCar.reset();
-        //TODO gewichten
+        //TODO Momentan ist es wichtig, dass die Trajectorie sehr fein ist!
+        lms::math::polyLine2f tempTraj = trajectory->getWithDistanceBetweenPoints(config().get<float>("distanceBetweenTrajectoryPoints",0.05));
         float currentDistance = 0;
+        float totalWeight = 0;
         float angle = 0;
-        for(int i = 1; i <(int) trajectory->points().size(); i++){
-            lms::math::vertex2f bot = trajectory->points()[i-1];
-            lms::math::vertex2f top = trajectory->points()[i];
+        for(int i = 1; i <(int) tempTraj.points().size(); i++){
+            lms::math::vertex2f bot = tempTraj.points()[i-1];
+            lms::math::vertex2f top = tempTraj.points()[i];
             currentDistance += bot.distance(top);
-            if(currentDistance > forcastLength){
+
+            if(currentDistance < minForcastLength){
+                continue;
+            }else if(currentDistance > forcastLength){
                 break;
             }
             if(bot.length() == 0 || top.length()==0){
                 angle = 0;
             }else{
-                angle = fabs(bot.angleBetween(top));
+                float weight = fabs(currentDistance-targetForcastLength)*weightMultiplieer;
+                totalWeight += weight;
+                angle = fabs(bot.angleBetween(top))*(fabs(currentDistance-targetForcastLength))*weight;
             }
         }
-        velocity = (minCurveSpeed-maxSpeed)/maxAngle*(angle)+maxSpeed;
+        velocity = (minCurveSpeed-maxSpeed)/maxAngle*(angle/totalWeight)+maxSpeed;
     }
     if(fabs(velocity < config().get<float>("minSpeed",0.1))){
+        velocity = 0;
+    }
+    if(isnan(velocity)){
+        logger.error("targetVelocity")<<"velocity is NAN";
         velocity = 0;
     }
     return velocity;
