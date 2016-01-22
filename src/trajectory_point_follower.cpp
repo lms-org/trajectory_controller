@@ -111,13 +111,12 @@ bool TrajectoryPointController::cycle() {
 float TrajectoryPointController::targetVelocity(){
     float velocity = 0;
     float maxSpeed = config().get<float>("maxSpeed",1);
-    float minCurveSpeed = config().get<float>("minCurveSpeed",maxSpeed/2);
+    float minCurveSpeed = config().get<float>("minSpeed",maxSpeed/2);
     float forcastLength = config().get<float>("forcastLength",1);
     float minForcastLength = config().get<float>("minForcastLength",0.3);
     float targetForcastLength = config().get<float>("targetForcastLength",0.6);
-    float circleLength = 2*M_PI/config().get<float>("maxCurvation",1);
     float weightMultiplieer = config().get<float>("weightMultiplieer",1);;
-    float maxAngle = 2*M_PI * forcastLength/circleLength ;
+    float maxAngle = config().get<float>("maxAngle",0.6);
 
     if(forcastLength > trajectory->length()){
         slowDownCar.set(config().get<float>("PID_Kp",1),config().get<float>("PID_Ki",0),config().get<float>("PID_Kd",0),config().get<float>("dt",0.01));
@@ -128,13 +127,13 @@ float TrajectoryPointController::targetVelocity(){
         //reset the PID controller
         slowDownCar.reset();
         //TODO Momentan ist es wichtig, dass die Trajectorie sehr fein ist!
-        lms::math::polyLine2f tempTraj = trajectory->getWithDistanceBetweenPoints(config().get<float>("distanceBetweenTrajectoryPoints",0.05));
+        //TODO that was stupud lms::math::polyLine2f tempTraj = trajectory->getWithDistanceBetweenPoints(config().get<float>("distanceBetweenTrajectoryPoints",0.05));
         float currentDistance = 0;
         float totalWeight = 0;
         float angle = 0;
-        for(int i = 1; i <(int) tempTraj.points().size(); i++){
-            lms::math::vertex2f bot = tempTraj.points()[i-1];
-            lms::math::vertex2f top = tempTraj.points()[i];
+        for(int i = 1; i <(int) trajectory->points().size(); i++){
+            lms::math::vertex2f bot = trajectory->points()[i-1];
+            lms::math::vertex2f top = trajectory->points()[i];
             currentDistance += bot.distance(top);
 
             if(currentDistance < minForcastLength){
@@ -142,18 +141,22 @@ float TrajectoryPointController::targetVelocity(){
             }else if(currentDistance > forcastLength){
                 break;
             }
-            if(bot.length() == 0 || top.length()==0){
+            if(bot.length() == 0 && top.length()==0){
                 angle = 0;
             }else{
                 float weight = fabs(currentDistance-targetForcastLength)*weightMultiplieer;
                 totalWeight += weight;
-                angle = fabs(bot.angleBetween(top))*(fabs(currentDistance-targetForcastLength))*weight;
+                if(bot.length() == 0){
+                    angle += fabs(top.angle()*(currentDistance-targetForcastLength))*weight;
+                }else{
+                    angle += fabs(bot.angleBetween(top)*(currentDistance-targetForcastLength))*weight;
+                }
             }
         }
         velocity = (minCurveSpeed-maxSpeed)/maxAngle*(angle/totalWeight)+maxSpeed;
-    }
-    if(fabs(velocity < config().get<float>("minSpeed",0.1))){
-        velocity = 0;
+
+        logger.debug("velocity")<<"angle: "<<angle/totalWeight<<" maxAngle: "<<maxAngle;
+        logger.debug("velocity")<<"velocity: "<<velocity;
     }
     if(isnan(velocity)){
         logger.error("targetVelocity")<<"velocity is NAN";
