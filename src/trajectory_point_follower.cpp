@@ -64,7 +64,7 @@ bool TrajectoryPointController::cycle() {
     double yawRate_soll = car->velocity()/0.21*sin(steering_front - steering_rear)/cos(steering_front);
     double yawRate_error = yawRate_soll - yawRate_ist;
     double steeringCorrection = yawRate_error * config().get<float>("yawRateBoost", 0.0);
-    steering_front += steeringCorrection*(steering_front > 0 ? 1 : -1);
+    steering_front += steeringCorrection;
 
 
     //debug-----
