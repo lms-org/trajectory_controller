@@ -59,6 +59,14 @@ bool TrajectoryPointController::cycle() {
         logger.error("trajectory_point_controller: ")<<"invalid vals: " <<steering_front <<" " <<steering_rear ;
     }
 
+    //TEST Adaptiver Gierboost
+    double yawRate_ist = car->turnRate();
+    double yawRate_soll = car->velocity()/0.21*sin(steering_front - steering_rear)/cos(steering_front);
+    double yawRate_error = yawRate_soll - yawRate_ist;
+    double steeringCorrection = yawRate_error * config().get<float>("yawRateBoost", 0.0);
+    steering_front += steeringCorrection;
+
+
     //debug-----
     //myfile << steering_front << "," << steering_rear << "," << v << std::endl;
     //----------
@@ -205,7 +213,7 @@ void TrajectoryPointController::mpcController(double v, double delta_y, double d
     //v = 1 + config().get("velocityFactor", 0.0)*v;
 
     if (config().get("velocityFactor", 0.0)) v = std::exp(-v*config().get("velocityFactor", 0.0));
-    else v = 1.0;
+    else v = 2.0;
     //v = 1.0;
 
     dlib::matrix<double,STATES,STATES> A;

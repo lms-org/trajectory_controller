@@ -42,7 +42,7 @@ private:
     double delta_v(double y_s, double phi_s, double te, double dh);
 
     double l = 0.21; //Radstand
-    static constexpr size_t MPC_HORIZON = 20;
+    static constexpr size_t MPC_HORIZON = 4;
 
     struct MpcParameters
     {
