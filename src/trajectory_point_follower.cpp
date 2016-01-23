@@ -122,8 +122,8 @@ float TrajectoryPointController::targetVelocity(){
     float minCurveSpeed = config().get<float>("minSpeed",maxSpeed/2);
     float forcastLength = config().get<float>("forcastLength",1);
     float minForcastLength = config().get<float>("minForcastLength",0.3);
-    float targetForcastLength = config().get<float>("targetForcastLength",0.6);
-    float weightMultiplieer = config().get<float>("weightMultiplieer",1);;
+    //float targetForcastLength = config().get<float>("targetForcastLength",0.6);
+    //float weightMultiplieer = config().get<float>("weightMultiplieer",1);;
     float maxAngle = config().get<float>("maxAngle",0.6);
 
     if(forcastLength > trajectory->length()){
@@ -315,10 +315,15 @@ street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoin
             trajectoryPoint.position.x = bot.x + toGoX*cos(angle);
             //y-Pos
             trajectoryPoint.position.y = bot.y + toGoX*sin(angle);
+            /*
             //x-Dir
             trajectoryPoint.directory.x = cos(angle);
             //y-Dir
             trajectoryPoint.directory.y = sin(angle);
+            */
+            lms::math::vertex2f dir = trajectory->viewDirs.points()[i].normalize();
+            trajectoryPoint.directory.x = dir.x;
+            trajectoryPoint.directory.y = dir.y;
             trajectoryPoint.velocity = targetVelocity();
             found = true;
             break;
