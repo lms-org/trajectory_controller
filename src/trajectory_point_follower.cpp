@@ -152,19 +152,37 @@ float TrajectoryPointController::targetVelocity(){
             if(bot.length() == 0 && top.length()==0){
                 angle = 0;
             }else{
+                totalWeight = 1;
+                float newAngle = 0;
+                if(bot.length() == 0){
+                    newAngle = top.angle();
+                }else{
+                    newAngle = bot.angleBetween(top);
+                }
+                newAngle = fabs(newAngle);
+                if(newAngle > angle){
+                    angle = newAngle;
+                }
+                //wir suchen den max angle
+                /*
                 float weight = fabs(currentDistance-targetForcastLength)*weightMultiplieer;
                 totalWeight += weight;
+                float newAngle = 0;
                 if(bot.length() == 0){
-                    angle += fabs(top.angle()*(currentDistance-targetForcastLength))*weight;
+                    newAngle = top.angle();
                 }else{
-                    angle += fabs(bot.angleBetween(top)*(currentDistance-targetForcastLength))*weight;
+                    newAngle = bot.angleBetween(top);
                 }
+                angle += fabs(newAngle*(currentDistance-targetForcastLength))*weight;//quadrierter wert
+                */
+
             }
         }
         velocity = (minCurveSpeed-maxSpeed)/maxAngle*(angle/totalWeight)+maxSpeed;
 
         logger.debug("velocity")<<"angle: "<<angle/totalWeight<<" maxAngle: "<<maxAngle;
         logger.debug("velocity")<<"velocity: "<<velocity;
+
     }
     if(isnan(velocity)){
         logger.error("targetVelocity")<<"velocity is NAN";
