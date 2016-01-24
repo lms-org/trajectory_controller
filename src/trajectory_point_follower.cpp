@@ -210,11 +210,9 @@ void TrajectoryPointController::mpcController(double v, double delta_y, double d
     //Dann abhängig von der wirklichen aktuellen Geschwindigkeit Addition eines "Geschwindigkeitsfaktors"
     // ==> v_regler = 1 + c*v_real oder alternativ v_regler = exp(-c*v_real)
 
-    //v = 1 + config().get("velocityFactor", 0.0)*v;
-
     if (config().get("velocityFactor", 0.0)) v = std::exp(-v*config().get("velocityFactor", 0.0));
-    else v = 2.0;
-    //v = 1.0;
+    else v = std::max(1.0, v);
+
 
     dlib::matrix<double,STATES,STATES> A;
     A = 1, T*v, 0, 1;
