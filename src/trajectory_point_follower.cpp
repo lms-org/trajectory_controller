@@ -315,15 +315,17 @@ street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoin
             trajectoryPoint.position.x = bot.x + toGoX*cos(angle);
             //y-Pos
             trajectoryPoint.position.y = bot.y + toGoX*sin(angle);
-            /*
-            //x-Dir
-            trajectoryPoint.directory.x = cos(angle);
-            //y-Dir
-            trajectoryPoint.directory.y = sin(angle);
-            */
-            lms::math::vertex2f dir = trajectory->viewDirs.points()[i].normalize();
-            trajectoryPoint.directory.x = dir.x;
-            trajectoryPoint.directory.y = dir.y;
+            if(i >= (int)trajectory->viewDirs.points().size()){
+                //x-Dir
+                trajectoryPoint.directory.x = cos(angle);
+                //y-Dir
+                trajectoryPoint.directory.y = sin(angle);
+                logger.error("getTrajectoryPoint")<<"no viewDir given! "<< trajectory->viewDirs.points().size();
+            }else{
+                lms::math::vertex2f dir = trajectory->viewDirs.points()[i].normalize();
+                trajectoryPoint.directory.x = dir.x;
+                trajectoryPoint.directory.y = dir.y;
+            }
             trajectoryPoint.velocity = targetVelocity();
             found = true;
             break;
