@@ -120,13 +120,13 @@ float TrajectoryPointController::targetVelocity(){
     float velocity = 0;
     float maxSpeed = config().get<float>("maxSpeed",1);
     float minCurveSpeed = config().get<float>("minSpeed",maxSpeed/2);
-    float forcastLength = config().get<float>("forcastLength",1);
+    float maxForcastLength = config().get<float>("forcastLength",1);
     float minForcastLength = config().get<float>("minForcastLength",0.3);
-    //float targetForcastLength = config().get<float>("targetForcastLength",0.6);
+    float targetForcastLength = config().get<float>("targetForcastLength",0.6);
     //float weightMultiplieer = config().get<float>("weightMultiplieer",1);;
     float maxAngle = config().get<float>("maxAngle",0.6);
 
-    if(forcastLength > trajectory->length()){
+    if(maxForcastLength > trajectory->length()){
         slowDownCar.set(config().get<float>("PID_Kp",1),config().get<float>("PID_Ki",0),config().get<float>("PID_Kd",0),config().get<float>("dt",0.01));
         //road will come to an end
         //reduce speed, we drive backwards if we went to far!
@@ -146,13 +146,12 @@ float TrajectoryPointController::targetVelocity(){
 
             if(currentDistance < minForcastLength){
                 continue;
-            }else if(currentDistance > forcastLength){
+            }else if(currentDistance > maxForcastLength){
                 break;
             }
             if(bot.length() == 0 && top.length()==0){
                 angle = 0;
             }else{
-                totalWeight = 1;
                 float newAngle = 0;
                 if(bot.length() == 0){
                     newAngle = top.angle();
@@ -160,21 +159,26 @@ float TrajectoryPointController::targetVelocity(){
                     newAngle = bot.angleBetween(top);
                 }
                 newAngle = fabs(newAngle);
+
+                /*
+                //wir suchen den max angle
                 if(newAngle > angle){
                     angle = newAngle;
                 }
-                //wir suchen den max angle
-                /*
-                float weight = fabs(currentDistance-targetForcastLength)*weightMultiplieer;
-                totalWeight += weight;
-                float newAngle = 0;
-                if(bot.length() == 0){
-                    newAngle = top.angle();
-                }else{
-                    newAngle = bot.angleBetween(top);
-                }
-                angle += fabs(newAngle*(currentDistance-targetForcastLength))*weight;//quadrierter wert
+                totalWeight = 1;
                 */
+
+                //wir nehmen den gewichteten average
+
+                float weight = config().get<float>("minWeight",0);
+                if(currentDistance <= targetForcastLength){
+                    weight = 1-(targetForcastLength-currentDistance)/(targetForcastLength-minForcastLength);
+                }else{
+                    weight = 1-(currentDistance-targetForcastLength)/(maxForcastLength-targetForcastLength);
+                }
+                totalWeight += weight;
+                angle += fabs(newAngle*(currentDistance-targetForcastLength))*weight;//quadrierter wert
+
 
             }
         }
