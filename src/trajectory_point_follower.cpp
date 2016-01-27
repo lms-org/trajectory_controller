@@ -118,7 +118,7 @@ bool TrajectoryPointController::cycle() {
 }
 float TrajectoryPointController::targetVelocity(){
     float velocity = 0;
-    float maxForcastLength = config().get<float>("forcastLength",1);
+    float maxForcastLength = config().get<float>("maxForcastLength",1);
     float minForcastLength = config().get<float>("minForcastLength",0.3);
     float targetForcastLength = config().get<float>("targetForcastLength",0.6);
     float maxAngle = config().get<float>("maxAngle",0.6);
@@ -177,7 +177,7 @@ float TrajectoryPointController::targetVelocity(){
                     weight += weightSlope+(1-(currentDistance-targetForcastLength)/(maxForcastLength-targetForcastLength));
                 }
                 totalWeight += weight;
-                angle += fabs(newAngle*(currentDistance-targetForcastLength))*weight;//quadrierter wert
+                angle += newAngle*weight;//quadrierter wert
             }
         }
         velocity = (minCurveSpeed-maxSpeed)/maxAngle*(angle/totalWeight)+maxSpeed;
