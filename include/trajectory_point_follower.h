@@ -4,7 +4,6 @@
 #include "lms/module.h"
 #include "lms/math/vertex.h"
 
-#include "comm/senseboard.h"
 #include "sensor_utils/car.h"
 #include "street_environment/trajectory.h"
 #include "sensor_utils/pid_controller.h"
