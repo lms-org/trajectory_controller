@@ -31,7 +31,7 @@ bool TrajectoryPointController::cycle() {
     const float distanceSearched = config().get<float>("distanceRegelpunkt", 0.50);
     street_environment::TrajectoryPoint trajectoryPoint = getTrajectoryPoint(distanceSearched);
     //double v = sensor_utils::Car::velocity();
-    double v = car->velocity(); // wird nicht verwendet
+    double v = car->velocity();
     if(fabs(v) < 0.1){
         logger.debug("cycle")<<"velocity is 0";
         v=0.1;//Some controller has some issue divides by v without error-checking
@@ -54,7 +54,7 @@ bool TrajectoryPointController::cycle() {
     }else{
         lenkwinkel(trajectoryPoint.position.length(),y_soll,phi_soll,1,&steering_rear,&steering_front);
     }
-    logger.debug("trajectory_point_controller") << "lw vorne: " << steering_front << "  lw hinten: " << steering_rear;
+    logger.debug("trajectory_point_controller") << "lw vorne: " << steering_front*180/M_PI << "  lw hinten: " << steering_rear*180/M_1_PI;
     if(isnan(steering_front) || isnan(steering_rear || isnan(trajectoryPoint.velocity)) ){
         logger.error("trajectory_point_controller: ")<<"invalid vals: " <<steering_front <<" " <<steering_rear ;
     }
@@ -88,6 +88,7 @@ bool TrajectoryPointController::cycle() {
     }else{
         state.state = sensor_utils::Car::StateType::DRIVING;
     }
+    state.steering_rear = -state.steering_rear; //TODO HACK
 
     logger.debug("positionController")<<"dv: "<<state.steering_front<< " dh"<<state.steering_rear<<" vel: "<<state.targetSpeed;
     //set the indicator
@@ -323,6 +324,15 @@ street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoin
                 logger.error("getTrajectoryPoint")<<"no viewDir given! "<< trajectory->viewDirs.points().size();
             }else{
                 lms::math::vertex2f dir = trajectory->viewDirs.points()[i].normalize();
+
+                //check if the viewDir can be used
+                if(dir.angle() > config().get<float>("maxParallelAusweichen",22.0*M_PI/180.0)){//TODO naming
+                    //x-Dir
+                    trajectoryPoint.directory.x = cos(angle);
+                    //y-Dir
+                    trajectoryPoint.directory.y = sin(angle);
+                    logger.warn("maxParallelAusweichen")<<"using trajectoryViewDir, not the viewDir!";
+                }
                 trajectoryPoint.directory.x = dir.x;
                 trajectoryPoint.directory.y = dir.y;
             }
