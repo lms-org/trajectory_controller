@@ -44,7 +44,7 @@ bool TrajectoryPointController::cycle() {
 
     double steering_front, steering_rear;
 
-    if(config().get<bool>("useMPCcontroller",0)){
+    if(config().get<bool>("useMPCcontroller",true)){
             //von config einlesen, um live einzustellen
            mpcParameters.weight_y = config().get<double>("weight_y",20);
            mpcParameters.weight_phi = config().get<double>("weight_phi",7);
@@ -195,6 +195,12 @@ float TrajectoryPointController::targetVelocity(){
     return velocity;
 }
 
+void TrajectoryPointController::configsChanged()
+{
+    x_vel = config().getArray<double>("velocity_x_values");
+    y_vel = config().getArray<double>("velocity_y_values");
+}
+
 void TrajectoryPointController::mpcController(double v, double delta_y, double delta_phi, double *steering_front, double *steering_rear) {
 
     const int STATES = 2; //number of states (y and phi)
@@ -214,8 +220,16 @@ void TrajectoryPointController::mpcController(double v, double delta_y, double d
     //Dann abhängig von der wirklichen aktuellen Geschwindigkeit Addition eines "Geschwindigkeitsfaktors"
     // ==> v_regler = 1 + c*v_real oder alternativ v_regler = exp(-c*v_real)
 
-    if (config().get("velocityFactor", 0.0)) v = std::exp(-v*config().get("velocityFactor", 0.0));
-    else v = std::max(1.0, v);
+    //if (config().get("velocityFactor", 0.0)) v = std::exp(-v*config().get("velocityFactor", 0.0));
+    //else v = std::max(1.0, v);
+
+    if (v > x_vel.at(x_vel.size()-1)) {
+            v = y_vel.at(y_vel.size()-1);
+    }
+    else
+    {
+        lms::math::lookupTableBinarySearch<double, lms::math::LookupTableOrder::ASC>(x_vel, y_vel, v, v);
+    }
 
 
     dlib::matrix<double,STATES,STATES> A;

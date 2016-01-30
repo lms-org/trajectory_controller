@@ -3,6 +3,7 @@
 
 #include "lms/module.h"
 #include "lms/math/vertex.h"
+#include "lms/math/lookup_table.h"
 
 #include "sensor_utils/car.h"
 #include "street_environment/trajectory.h"
@@ -43,6 +44,10 @@ private:
     double delta_c_v(double phi_s, double te, double v, double y_s, double dh);
     double delta_h(double y_s, double phi_s, double te);
     double delta_v(double y_s, double phi_s, double te, double dh);
+    void configsChanged() override;
+
+    std::vector<double> x_vel;
+    std::vector<double> y_vel;
 
     double l = 0.21; //Radstand
     static constexpr size_t MPC_HORIZON = 4;
