@@ -29,6 +29,7 @@ bool TrajectoryPointController::deinitialize() {
 
 bool TrajectoryPointController::cycle() {
     const float distanceSearched = config().get<float>("distanceRegelpunkt", 0.50);
+
     street_environment::TrajectoryPoint trajectoryPoint = getTrajectoryPoint(distanceSearched);
     //double v = sensor_utils::Car::velocity();
     double v = car->velocity();

@@ -6,6 +6,8 @@
 
 #include "sensor_utils/car.h"
 #include "street_environment/trajectory.h"
+#include "lms/math/interpolation.h"
+#include "lms/math/lookup_table.h"
 #include "sensor_utils/pid_controller.h"
 
 //http://stackoverflow.com/questions/7159348/disable-single-warning-error
@@ -25,6 +27,8 @@ public:
     bool deinitialize() override;
     bool cycle() override;
 private:
+
+    lms::math::LookupTable<float,lms::math::LookupTableOrder::ASC> distanceToTrajectoryPoint;
 
     street_environment::TrajectoryPoint getTrajectoryPoint(float distanceToPoint);
     /**
