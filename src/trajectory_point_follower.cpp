@@ -28,9 +28,10 @@ bool TrajectoryPointController::deinitialize() {
 }
 
 bool TrajectoryPointController::cycle() {
-    const float distanceSearched = config().get<float>("distanceRegelpunkt", 0.50);
+    const float distanceToTrajectoryPoint = m_trajectoryPointDistanceLookup.linearSearch(car->velocity());
+    //const float distanceSearched = config().get<float>("distanceRegelpunkt", 0.50);
 
-    street_environment::TrajectoryPoint trajectoryPoint = getTrajectoryPoint(distanceSearched);
+    street_environment::TrajectoryPoint trajectoryPoint = getTrajectoryPoint(distanceToTrajectoryPoint);
     //double v = sensor_utils::Car::velocity();
     double v = car->velocity();
     if(fabs(v) < 0.1){
@@ -51,7 +52,7 @@ bool TrajectoryPointController::cycle() {
            mpcParameters.weight_steeringFront = config().get<double>("weight_steering_front",0.0005);
            mpcParameters.weight_steeringRear = config().get<double>("weight_steering_rear",10);
            mpcParameters.stepSize = 0.1; //Zeitschrittgroesse fuer MPC
-            mpcController(v, y_soll, phi_soll, &steering_front, &steering_rear);
+           mpcController(v, y_soll, phi_soll, &steering_front, &steering_rear);
     }else{
         lenkwinkel(trajectoryPoint.position.length(),y_soll,phi_soll,1,&steering_rear,&steering_front);
     }
@@ -197,8 +198,10 @@ float TrajectoryPointController::targetVelocity(){
 
 void TrajectoryPointController::configsChanged()
 {
-    x_vel = config().getArray<double>("velocity_x_values");
-    y_vel = config().getArray<double>("velocity_y_values");
+    m_mpcLookupVelocity.vx = config().getArray<float>("mpcLookupVelocityX");
+    m_mpcLookupVelocity.vy = config().getArray<float>("mpcLookupVelocityY");
+    m_trajectoryPointDistanceLookup.vx = config().getArray<float>("trajectoryPointDistanceLookupX");
+    m_trajectoryPointDistanceLookup.vy = config().getArray<float>("trajectoryPointDistanceLookupY");
 }
 
 void TrajectoryPointController::mpcController(double v, double delta_y, double delta_phi, double *steering_front, double *steering_rear) {
@@ -223,13 +226,7 @@ void TrajectoryPointController::mpcController(double v, double delta_y, double d
     //if (config().get("velocityFactor", 0.0)) v = std::exp(-v*config().get("velocityFactor", 0.0));
     //else v = std::max(1.0, v);
 
-    if (v > x_vel.at(x_vel.size()-1)) {
-            v = y_vel.at(y_vel.size()-1);
-    }
-    else
-    {
-        lms::math::lookupTableBinarySearch<double, lms::math::LookupTableOrder::ASC>(x_vel, y_vel, v, v);
-    }
+    v = m_mpcLookupVelocity.linearSearch(v);
 
 
     dlib::matrix<double,STATES,STATES> A;

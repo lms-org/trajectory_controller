@@ -29,7 +29,8 @@ public:
     bool cycle() override;
 private:
 
-    lms::math::LookupTable<float,lms::math::LookupTableOrder::ASC> distanceToTrajectoryPoint;
+    lms::math::LookupTable<float, lms::math::LookupTableOrder::ASC> m_mpcLookupVelocity;
+    lms::math::LookupTable<float,lms::math::LookupTableOrder::ASC> m_trajectoryPointDistanceLookup;
 
     street_environment::TrajectoryPoint getTrajectoryPoint(float distanceToPoint);
     /**
@@ -45,9 +46,6 @@ private:
     double delta_h(double y_s, double phi_s, double te);
     double delta_v(double y_s, double phi_s, double te, double dh);
     void configsChanged() override;
-
-    std::vector<double> x_vel;
-    std::vector<double> y_vel;
 
     double l = 0.21; //Radstand
     static constexpr size_t MPC_HORIZON = 4;
