@@ -36,13 +36,14 @@ bool TrajectoryPointController::cycle() {
     //double v = sensor_utils::Car::velocity();
     double v = car->velocity();
     if(fabs(v) < 0.1){
-        logger.debug("cycle")<<"velocity is 0";
+        logger.debug("cycle")<<"ar is slow: "<<car->velocity();
         v=0.1;//Some controller has some issue divides by v without error-checking
     }
 
-
     double phi_soll = atan2(trajectoryPoint.directory.y, trajectoryPoint.directory.x);
     double y_soll = trajectoryPoint.position.y;
+
+    //logger.error("phi_soll")<<phi_soll<< " "<< y_soll;
 
     double steering_front, steering_rear;
 
@@ -91,7 +92,6 @@ bool TrajectoryPointController::cycle() {
     }else{
         state.state = sensor_utils::Car::StateType::DRIVING;
     }
-    state.steering_rear = -state.steering_rear; //TODO HACK
 
     logger.debug("positionController")<<"dv: "<<state.steering_front<< " dh"<<state.steering_rear<<" vel: "<<state.targetSpeed;
     //set the indicator
@@ -121,29 +121,31 @@ bool TrajectoryPointController::cycle() {
     return true;
 }
 float TrajectoryPointController::targetVelocity(){
+    velocityWeight.start(); //reset data
     float velocity = 0;
     float maxForcastLength = config().get<float>("maxForcastLength",1);
     float minForcastLength = config().get<float>("minForcastLength",0.3);
-    float targetForcastLength = config().get<float>("targetForcastLength",0.6);
     float maxAngle = config().get<float>("maxAngle",0.6);
     float maxSpeed = config().get<float>("maxSpeed",1);
     float minCurveSpeed = config().get<float>("minSpeed",maxSpeed/2);
-    float weightOffset = config().get<float>("weightOffset",1);
-    float weightSlope = config().get<float>("weightSlope",1);
 
     if(maxForcastLength > trajectory->length()){
         slowDownCar.set(config().get<float>("PID_Kp",1),config().get<float>("PID_Ki",0),config().get<float>("PID_Kd",0),config().get<float>("dt",0.01));
         //road will come to an end
         //reduce speed, we drive backwards if we went to far!
         velocity = slowDownCar.pid(trajectory->length()*lms::math::sgn<float>(trajectory->points()[trajectory->points().size()-1].x));
+        if(isnan(velocity)){
+            logger.error("targetVelocity.normalDrive")<<"velocity is NAN";
+            velocity = 0;
+        }
     }else{
         //reset the PID controller
         slowDownCar.reset();
         //TODO Momentan ist es wichtig, dass die Trajectorie sehr fein ist!
         //TODO that was stupud lms::math::polyLine2f tempTraj = trajectory->getWithDistanceBetweenPoints(config().get<float>("distanceBetweenTrajectoryPoints",0.05));
         float currentDistance = 0;
-        float totalWeight = 0;
         float angle = 0;
+        logger.error("TRAJECTORY_POINTCOUNT")<<trajectory->points().size();
         for(int i = 1; i <(int) trajectory->points().size(); i++){
             lms::math::vertex2f bot = trajectory->points()[i-1];
             lms::math::vertex2f top = trajectory->points()[i];
@@ -151,7 +153,7 @@ float TrajectoryPointController::targetVelocity(){
 
             if(currentDistance < minForcastLength){
                 continue;
-            }else if(currentDistance > maxForcastLength){
+            }else if(currentDistance > maxForcastLength){//we always want one step
                 break;
             }
             if(bot.length() == 0 && top.length()==0){
@@ -165,44 +167,35 @@ float TrajectoryPointController::targetVelocity(){
                 }
                 newAngle = fabs(newAngle);
 
-                /*
-                //wir suchen den max angle
-                if(newAngle > angle){
-                    angle = newAngle;
-                }
-                totalWeight = 1;
-                */
-                float weight = weightOffset;
-
-                //wir nehmen den gewichteten average
-                if(currentDistance <= targetForcastLength){
-                    weight += weightSlope+(1-(targetForcastLength-currentDistance)/(targetForcastLength-minForcastLength));
-                }else{
-                    weight += weightSlope+(1-(currentDistance-targetForcastLength)/(maxForcastLength-targetForcastLength));
-                }
-                totalWeight += weight;
-                angle += newAngle*weight;//quadrierter wert
+                velocityWeight.add(newAngle,currentDistance);
             }
         }
-        velocity = (minCurveSpeed-maxSpeed)/maxAngle*(angle/totalWeight)+maxSpeed;
+        velocity = (minCurveSpeed-maxSpeed)/maxAngle*(velocityWeight.average())+maxSpeed;
 
-        logger.debug("velocity")<<"angle: "<<angle/totalWeight<<" maxAngle: "<<maxAngle;
-        logger.debug("velocity")<<"velocity: "<<velocity;
+        logger.error("velocity")<<"angle: "<< velocityWeight.average()<<"velocity: "<<velocity;
+        if(isnan(velocity)){
+            logger.error("targetVelocity.normalDrive")<<"velocity is NAN";
+            velocity = 0;
+        }
 
     }
     if(isnan(velocity)){
-        logger.error("targetVelocity")<<"velocity is NAN";
+        logger.error("targetVelocity")<<"velocity is NAN"<<" trajectory pointCount "<<trajectory->points().size();
         velocity = 0;
     }
     return velocity;
 }
 
-void TrajectoryPointController::configsChanged()
-{
+void TrajectoryPointController::configsChanged(){
     m_mpcLookupVelocity.vx = config().getArray<float>("mpcLookupVelocityX");
     m_mpcLookupVelocity.vy = config().getArray<float>("mpcLookupVelocityY");
     m_trajectoryPointDistanceLookup.vx = config().getArray<float>("trajectoryPointDistanceLookupX");
     m_trajectoryPointDistanceLookup.vy = config().getArray<float>("trajectoryPointDistanceLookupY");
+    velocityWeight.inter.maxHeight = config().get<float>("velocityWeightMaxHeight",3);
+    velocityWeight.inter.offSet = config().get<float>("velocityWeightOffSet",2);
+    velocityWeight.inter.x0 = config().get<float>("velocityWeightX0",0.5);
+    velocityWeight.inter.x1 = config().get<float>("velocityWeightX1",1.2);
+    velocityWeight.inter.xMax = config().get<float>("velocityWeight",1.0);
 }
 
 void TrajectoryPointController::mpcController(double v, double delta_y, double delta_phi, double *steering_front, double *steering_rear) {
@@ -225,7 +218,7 @@ void TrajectoryPointController::mpcController(double v, double delta_y, double d
     // ==> v_regler = 1 + c*v_real oder alternativ v_regler = exp(-c*v_real)
 
     //if (config().get("velocityFactor", 0.0)) v = std::exp(-v*config().get("velocityFactor", 0.0));
-    //else v = std::max(1.0, v);
+    //v = std::max(1.0, v);
 
     v = m_mpcLookupVelocity.linearSearch(v);
 
@@ -309,32 +302,28 @@ street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoin
         found = true;
     }
     for(int i = 1; i < (int)trajectory->points().size();i++){
-        //TODO put 0.2 in config
         lms::math::vertex2f top = trajectory->points()[i];
-        //logger.debug("cycle") << "pos: " << toFollow->points()[i].x() << " " << toFollow->points()[i].y();
+        //TODO interpolate the viewDir!
         if(top.x > distanceToPoint){
-            //TODO has to be tested
             //We start at the bottom-point
             lms::math::vertex2f bot = trajectory->points()[i-1];
             float toGoX = distanceToPoint-bot.x;
             if(toGoX <= 0){
-                //TODO
                 toGoX = 0;
             }
 
             float angle = (top-bot).angle();
-            //we to the bot-coords the length, that is still to go in absolute direction to 0,0
-            //TODO point isn't on the trajectory but I think it could be fine
+            //to the bot-coords the length, that is still to go in absolute direction to 0,0
             //x-Pos
             trajectoryPoint.position.x = bot.x + toGoX*cos(angle);
             //y-Pos
             trajectoryPoint.position.y = bot.y + toGoX*sin(angle);
-            if(i >= (int)trajectory->viewDirs.points().size()){
+            if(i >= (int)trajectory->viewDirs.points().size() || config().get<bool>("viewDirOnlyFromTrajectory",false)){
                 //x-Dir
                 trajectoryPoint.directory.x = cos(angle);
                 //y-Dir
                 trajectoryPoint.directory.y = sin(angle);
-                logger.error("getTrajectoryPoint")<<"no viewDir given! "<< trajectory->viewDirs.points().size();
+                //logger.error("getTrajectoryPoint")<<"no viewDir given! "<< trajectory->viewDirs.points().size();
             }else{
                 lms::math::vertex2f dir = trajectory->viewDirs.points()[i].normalize();
 

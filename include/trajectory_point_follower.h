@@ -37,6 +37,7 @@ private:
      * @brief slowDownCar used to slow down the car if the trajectory comes to an end
      */
     sensor_utils::PID slowDownCar;
+    lms::math::LinearWeightAverageInterpolator<float> velocityWeight;
 
     float targetVelocity();
     void positionControllerVel();
