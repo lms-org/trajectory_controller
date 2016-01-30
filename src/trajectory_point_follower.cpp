@@ -19,6 +19,7 @@ bool TrajectoryPointController::initialize() {
 
     //myfile.open("mpcData.csv");
     //v_global = 0.0;
+    configsChanged();
 
     return true;
 }
