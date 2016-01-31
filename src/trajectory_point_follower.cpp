@@ -97,7 +97,8 @@ bool TrajectoryPointController::cycle() {
     //set the indicator
     //get the closest change
     float nextChangeDistance = config().get<float>("indicatorMaxDistance",0.5);
-    for(const street_environment::Trajectory::RoadChange &change : trajectory->changes){
+    /* TODO
+     * for(const street_environment::Trajectory::RoadChange &change : trajectory->changes){
         float xDistance = trajectory->points()[change.changeRoadIndex].x;
         if(xDistance < config().get<float>("indicatorMinDistance",0)){
             continue;
@@ -113,6 +114,7 @@ bool TrajectoryPointController::cycle() {
             state.indicatorLeft = false;
         }
     }
+    */
     //insert the state
     car->putState(state);
 
@@ -128,7 +130,8 @@ float TrajectoryPointController::targetVelocity(){
     float maxAngle = config().get<float>("maxAngle",0.6);
     float maxSpeed = config().get<float>("maxSpeed",1);
     float minCurveSpeed = config().get<float>("minSpeed",maxSpeed/2);
-
+    /*
+        TODO
     if(maxForcastLength > trajectory->length()){
         slowDownCar.set(config().get<float>("PID_Kp",1),config().get<float>("PID_Ki",0),config().get<float>("PID_Kd",0),config().get<float>("dt",0.01));
         //road will come to an end
@@ -144,8 +147,6 @@ float TrajectoryPointController::targetVelocity(){
         //TODO Momentan ist es wichtig, dass die Trajectorie sehr fein ist!
         //TODO that was stupud lms::math::polyLine2f tempTraj = trajectory->getWithDistanceBetweenPoints(config().get<float>("distanceBetweenTrajectoryPoints",0.05));
         float currentDistance = 0;
-        float angle = 0;
-        logger.error("TRAJECTORY_POINTCOUNT")<<trajectory->points().size();
         for(int i = 1; i <(int) trajectory->points().size(); i++){
             lms::math::vertex2f bot = trajectory->points()[i-1];
             lms::math::vertex2f top = trajectory->points()[i];
@@ -153,11 +154,10 @@ float TrajectoryPointController::targetVelocity(){
 
             if(currentDistance < minForcastLength){
                 continue;
-            }else if(currentDistance > maxForcastLength){//we always want one step
-                break;
             }
+
             if(bot.length() == 0 && top.length()==0){
-                angle = 0;
+                velocityWeight.add(0,currentDistance); //Not sure if that is smart
             }else{
                 float newAngle = 0;
                 if(bot.length() == 0){
@@ -169,10 +169,14 @@ float TrajectoryPointController::targetVelocity(){
 
                 velocityWeight.add(newAngle,currentDistance);
             }
+            if(currentDistance > maxForcastLength){//we always want one step
+                break;
+            }
+
         }
         velocity = (minCurveSpeed-maxSpeed)/maxAngle*(velocityWeight.average())+maxSpeed;
 
-        logger.error("velocity")<<"angle: "<< velocityWeight.average()<<"velocity: "<<velocity;
+        logger.debug("velocity")<<"angle: "<< velocityWeight.average()<<"velocity: "<<velocity;
         if(isnan(velocity)){
             logger.error("targetVelocity.normalDrive")<<"velocity is NAN";
             velocity = 0;
@@ -183,6 +187,7 @@ float TrajectoryPointController::targetVelocity(){
         logger.error("targetVelocity")<<"velocity is NAN"<<" trajectory pointCount "<<trajectory->points().size();
         velocity = 0;
     }
+    */
     return velocity;
 }
 
@@ -290,6 +295,7 @@ void TrajectoryPointController::mpcController(double v, double delta_y, double d
 
 street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoint(float distanceToPoint){
     street_environment::TrajectoryPoint trajectoryPoint;
+    /* TODO
     bool found = false;
     if(trajectory->points().size()  == 0){
         logger.warn("cycle") <<"Can't follow anything";
@@ -306,7 +312,7 @@ street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoin
         //TODO interpolate the viewDir!
         if(top.x > distanceToPoint){
             //We start at the bottom-point
-            lms::math::vertex2f bot = trajectory->points()[i-1];
+            lms::math::vertex2f bot = trajectory->at(i-1);
             float toGoX = distanceToPoint-bot.x;
             if(toGoX <= 0){
                 toGoX = 0;
@@ -318,21 +324,22 @@ street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoin
             trajectoryPoint.position.x = bot.x + toGoX*cos(angle);
             //y-Pos
             trajectoryPoint.position.y = bot.y + toGoX*sin(angle);
-            if(i >= (int)trajectory->viewDirs.points().size() || config().get<bool>("viewDirOnlyFromTrajectory",false)){
+            if(i >= (int)trajectory->size() || config().get<bool>("viewDirOnlyFromTrajectory",false)){
                 //x-Dir
                 trajectoryPoint.directory.x = cos(angle);
                 //y-Dir
                 trajectoryPoint.directory.y = sin(angle);
                 //logger.error("getTrajectoryPoint")<<"no viewDir given! "<< trajectory->viewDirs.points().size();
             }else{
-                lms::math::vertex2f dir = trajectory->viewDirs.points()[i].normalize();
-
+                lms::math::vertex2f dir = trajectoryPoint.position.normalize();
                 //check if the viewDir can be used
                 if(dir.angle() > config().get<float>("maxParallelAusweichen",22.0*M_PI/180.0)){//TODO naming
+
+                    dir = (dir+((trajectory->viewDirs.points()[i].normalize()-dir)*0.5)).normalize();
                     //x-Dir
-                    trajectoryPoint.directory.x = cos(angle);
+                    trajectoryPoint.directory.x = dir.x;
                     //y-Dir
-                    trajectoryPoint.directory.y = sin(angle);
+                    trajectoryPoint.directory.y = dir.y;
                     logger.warn("maxParallelAusweichen")<<"using trajectoryViewDir, not the viewDir!";
                 }
                 trajectoryPoint.directory.x = dir.x;
@@ -343,6 +350,8 @@ street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoin
             break;
         }
     }
+    */
+    bool found = false; //TODO
     if(!found){
         //if we find nothing, we just want to idle forward
         //x-Pos
