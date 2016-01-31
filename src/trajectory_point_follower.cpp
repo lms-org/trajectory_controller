@@ -293,67 +293,11 @@ void TrajectoryPointController::mpcController(double v, double delta_y, double d
 }
 
 
-street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoint(float distanceToPoint){
-    street_environment::TrajectoryPoint trajectoryPoint;
-    /* TODO
-    bool found = false;
-    if(trajectory->points().size()  == 0){
+street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoint(const float distanceToPoint){
+    //if we find nothing, we just want to idle forward
+    if(trajectory->size()  == 0){
         logger.warn("cycle") <<"Can't follow anything";
-    }else if(trajectory->points().size() == 1){
-        //set endPoint
-        found = true;
-        trajectoryPoint.directory = lms::math::vertex2f(1,0);
-        trajectoryPoint.position = trajectory->points()[0];
-        trajectoryPoint.velocity = 0;
-        found = true;
-    }
-    for(int i = 1; i < (int)trajectory->points().size();i++){
-        lms::math::vertex2f top = trajectory->points()[i];
-        //TODO interpolate the viewDir!
-        if(top.x > distanceToPoint){
-            //We start at the bottom-point
-            lms::math::vertex2f bot = trajectory->at(i-1);
-            float toGoX = distanceToPoint-bot.x;
-            if(toGoX <= 0){
-                toGoX = 0;
-            }
-
-            float angle = (top-bot).angle();
-            //to the bot-coords the length, that is still to go in absolute direction to 0,0
-            //x-Pos
-            trajectoryPoint.position.x = bot.x + toGoX*cos(angle);
-            //y-Pos
-            trajectoryPoint.position.y = bot.y + toGoX*sin(angle);
-            if(i >= (int)trajectory->size() || config().get<bool>("viewDirOnlyFromTrajectory",false)){
-                //x-Dir
-                trajectoryPoint.directory.x = cos(angle);
-                //y-Dir
-                trajectoryPoint.directory.y = sin(angle);
-                //logger.error("getTrajectoryPoint")<<"no viewDir given! "<< trajectory->viewDirs.points().size();
-            }else{
-                lms::math::vertex2f dir = trajectoryPoint.position.normalize();
-                //check if the viewDir can be used
-                if(dir.angle() > config().get<float>("maxParallelAusweichen",22.0*M_PI/180.0)){//TODO naming
-
-                    dir = (dir+((trajectory->viewDirs.points()[i].normalize()-dir)*0.5)).normalize();
-                    //x-Dir
-                    trajectoryPoint.directory.x = dir.x;
-                    //y-Dir
-                    trajectoryPoint.directory.y = dir.y;
-                    logger.warn("maxParallelAusweichen")<<"using trajectoryViewDir, not the viewDir!";
-                }
-                trajectoryPoint.directory.x = dir.x;
-                trajectoryPoint.directory.y = dir.y;
-            }
-            trajectoryPoint.velocity = targetVelocity();
-            found = true;
-            break;
-        }
-    }
-    */
-    bool found = false; //TODO
-    if(!found){
-        //if we find nothing, we just want to idle forward
+        street_environment::TrajectoryPoint trajectoryPoint;
         //x-Pos
         trajectoryPoint.position.x = distanceToPoint;
         //y-Pos
@@ -363,8 +307,25 @@ street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoin
         //y-Dir
         trajectoryPoint.directory.y = 0;
         trajectoryPoint.velocity = 0;
+        return trajectoryPoint;
     }
-    return trajectoryPoint;
+
+    //Nur den Abstand in x-richtung zu nehmen ist nicht schlau, denn wenn das Auto eskaliert eskaliert der Regler noch viel mehr!
+    float currentDistance = 0;
+    for(int i = 1; i < (int)trajectory->size();i++){
+        street_environment::TrajectoryPoint bot = trajectory->at(i);
+        street_environment::TrajectoryPoint top = trajectory->at(i);
+        currentDistance += bot.position.distance(top.position);
+        if(currentDistance > distanceToPoint){
+            //We start at the bottom-point
+            //TODO inerpolate between bot and top! #IMPORTANT
+            return bot;
+        }
+    }
+
+    //we just return the last Point
+    logger.warn("No trajectoryPoint found, returning the last point of the trajectory");
+    return trajectory->at(trajectory->size()-1);
 }
 
 

@@ -32,7 +32,7 @@ private:
     lms::math::LookupTable<float, lms::math::LookupTableOrder::ASC> m_mpcLookupVelocity;
     lms::math::LookupTable<float,lms::math::LookupTableOrder::ASC> m_trajectoryPointDistanceLookup;
 
-    street_environment::TrajectoryPoint getTrajectoryPoint(float distanceToPoint);
+    street_environment::TrajectoryPoint getTrajectoryPoint(const float distanceToPoint);
     /**
      * @brief slowDownCar used to slow down the car if the trajectory comes to an end
      */
