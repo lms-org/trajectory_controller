@@ -313,7 +313,7 @@ street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoin
     //Nur den Abstand in x-richtung zu nehmen ist nicht schlau, denn wenn das Auto eskaliert eskaliert der Regler noch viel mehr!
     float currentDistance = 0;
     for(int i = 1; i < (int)trajectory->size();i++){
-        street_environment::TrajectoryPoint bot = trajectory->at(i);
+        street_environment::TrajectoryPoint bot = trajectory->at(i-1);
         street_environment::TrajectoryPoint top = trajectory->at(i);
         currentDistance += bot.position.distance(top.position);
         if(currentDistance > distanceToPoint){
@@ -324,7 +324,7 @@ street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoin
     }
 
     //we just return the last Point
-    logger.warn("No trajectoryPoint found, returning the last point of the trajectory");
+    logger.warn("No trajectoryPoint found, returning the last point of the trajectory")<<"trajPointCount"<<trajectory->size()<< " distanceSearched: "<< currentDistance << " distanceToTrajectoryPoint: "<< distanceToPoint;
     return trajectory->at(trajectory->size()-1);
 }
 
