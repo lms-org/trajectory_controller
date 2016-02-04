@@ -201,6 +201,8 @@ void TrajectoryPointController::configsChanged(){
     velocityWeight.inter.x0 = config().get<float>("velocityWeightX0",0.5);
     velocityWeight.inter.x1 = config().get<float>("velocityWeightX1",1.2);
     velocityWeight.inter.xMax = config().get<float>("velocityWeight",1.0);
+    slowDownCar.set(config().get<float>("PID_Kp",1),config().get<float>("PID_Ki",0),config().get<float>("PID_Kd",0),config().get<float>("dt",0.01));
+
 }
 
 void TrajectoryPointController::mpcController(double v, double delta_y, double delta_phi, double *steering_front, double *steering_rear) {
@@ -295,21 +297,21 @@ void TrajectoryPointController::mpcController(double v, double delta_y, double d
 
 street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoint(const float distanceToPoint){
     //if we find nothing, we just want to idle forward
+    street_environment::TrajectoryPoint trajectoryPoint;
+    //x-Pos
+    trajectoryPoint.position.x = distanceToPoint;
+    //y-Pos
+    trajectoryPoint.position.y = 0;
+    //x-Dir
+    trajectoryPoint.directory.x = 1;
+    //y-Dir
+    trajectoryPoint.directory.y = 0;
+    trajectoryPoint.velocity = 0;
     if(trajectory->size()  == 0){
         logger.warn("cycle") <<"Can't follow anything";
-        street_environment::TrajectoryPoint trajectoryPoint;
-        //x-Pos
-        trajectoryPoint.position.x = distanceToPoint;
-        //y-Pos
-        trajectoryPoint.position.y = 0;
-        //x-Dir
-        trajectoryPoint.directory.x = 1;
-        //y-Dir
-        trajectoryPoint.directory.y = 0;
-        trajectoryPoint.velocity = 0;
         return trajectoryPoint;
     }
-
+    bool found = false;
     //Nur den Abstand in x-richtung zu nehmen ist nicht schlau, denn wenn das Auto eskaliert eskaliert der Regler noch viel mehr!
     float currentDistance = 0;
     for(int i = 1; i < (int)trajectory->size();i++){
@@ -318,14 +320,35 @@ street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoin
         currentDistance += bot.position.distance(top.position);
         if(currentDistance > distanceToPoint){
             //We start at the bottom-point
-            //TODO inerpolate between bot and top! #IMPORTANT
-            return bot;
+            //TODO inerpolate between bot and top! #IMPORTANT (velocity!,viewdir,x,y)
+            trajectoryPoint =  bot;
+            found = true;
+            break;
         }
     }
+    if(!found){
+        logger.warn("No trajectoryPoint found, returning the last point of the trajectory")<<"trajPointCount"<<trajectory->size()<< " distanceSearched: "<< currentDistance << " distanceToTrajectoryPoint: "<< distanceToPoint;
+        trajectoryPoint = trajectory->at(trajectory->size()-1);
+    }
 
+    //HACK stop at crossing
+    for(const street_environment::TrajectoryPoint &v:*trajectory){
+        if(v.velocity == 0){
+            float distanceToStop = v.position.length();
+            if(distanceToStop < config().get<float>("distanceToStop",1)){
+                float velocity = slowDownCar.pid(distanceToStop);
+                if(!isnan(velocity)){
+                    trajectoryPoint.velocity = velocity;
+                    break;
+                }
+
+            }else{
+                slowDownCar.reset();
+            }
+        }
+    }
     //we just return the last Point
-    logger.warn("No trajectoryPoint found, returning the last point of the trajectory")<<"trajPointCount"<<trajectory->size()<< " distanceSearched: "<< currentDistance << " distanceToTrajectoryPoint: "<< distanceToPoint;
-    return trajectory->at(trajectory->size()-1);
+    return trajectoryPoint;
 }
 
 
