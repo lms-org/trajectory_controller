@@ -320,8 +320,11 @@ street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoin
         currentDistance += bot.position.distance(top.position);
         if(currentDistance > distanceToPoint){
             //We start at the bottom-point
-            //TODO inerpolate between bot and top! #IMPORTANT (velocity!,viewdir,x,y)
-            trajectoryPoint =  bot;
+            //inerpolate between bot and top! #IMPORTANT (velocity!,viewdir)
+            float delta = currentDistance-distanceToPoint;
+            lms::math::vertex2f along = (bot.position-top.position).normalize()*delta;
+            trajectoryPoint =  top;
+            trajectoryPoint.position = trajectoryPoint.position+along;
             found = true;
             break;
         }
