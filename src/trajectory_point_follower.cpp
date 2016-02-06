@@ -337,14 +337,25 @@ street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoin
     //HACK stop at crossing
     for(const street_environment::TrajectoryPoint &v:*trajectory){
         if(v.velocity == 0){
-            float distanceToStop = v.position.length();
-            if(distanceToStop < config().get<float>("distanceToStop",1)){
+            float distanceToStop = v.position.length() - 0.2;
+            if(distanceToStop < 0.0)
+                distanceToStop = 0.0;
+            if(distanceToStop < config().get<float>("distanceToStop",1) && distanceToStop > config().get<float>("crossingSaftyZone",0.05)){
+                logger.debug("distanceToStop")<< distanceToStop;
+                float maxVelocityCrossing = config().get<float>("maxVelocityCrossing", 2.0);
                 float velocity = slowDownCar.pid(distanceToStop);
-                if(!isnan(velocity)){
+                if(!isnan(velocity) || velocity <= maxVelocityCrossing){
                     trajectoryPoint.velocity = velocity;
                     break;
                 }
-
+                else if(distanceToStop <= config().get<float>("crossingSaftyZone",0.05))
+                {
+                    velocity = 0.0;
+                }
+                else
+                {
+                    velocity = maxVelocityCrossing;
+                }
             }else{
                 slowDownCar.reset();
             }
