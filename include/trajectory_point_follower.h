@@ -37,10 +37,7 @@ private:
      * @brief slowDownCar used to slow down the car if the trajectory comes to an end
      */
     sensor_utils::PID slowDownCar;
-    lms::math::LinearWeightAverageInterpolator<float> velocityWeight;
 
-    float targetVelocity();
-    void positionControllerVel();
     void mpcController(double v, double delta_y, double delta_phi, double *steering_front, double *steering_rear);
     double delta_c_h(double phi_s, double te, double v, double y_s);
     double delta_c_v(double phi_s, double te, double v, double y_s, double dh);

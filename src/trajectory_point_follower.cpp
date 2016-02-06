@@ -96,25 +96,23 @@ bool TrajectoryPointController::cycle() {
     logger.debug("positionController")<<"dv: "<<state.steering_front<< " dh"<<state.steering_rear<<" vel: "<<state.targetSpeed;
     //set the indicator
     //get the closest change
-    float nextChangeDistance = config().get<float>("indicatorMaxDistance",0.5);
-    /* TODO
-     * for(const street_environment::Trajectory::RoadChange &change : trajectory->changes){
-        float xDistance = trajectory->points()[change.changeRoadIndex].x;
-        if(xDistance < config().get<float>("indicatorMinDistance",0)){
-            continue;
-        }else if(xDistance >= nextChangeDistance){
-            continue;
-        }
-        nextChangeDistance = xDistance;
-        if(change.changeToLeft){
-            state.indicatorLeft = true;
-            state.indicatorRight = false;
-        }else{
-            state.indicatorRight = true;
-            state.indicatorLeft = false;
+    //TODO set the indicator #Important
+    //float indicatorMaxDistance = config().get<float>("indicatorMaxDistance",0.5);
+    bool isRight = trajectory->at(0).isRight();
+    for(const street_environment::TrajectoryPoint &tp:*trajectory){
+        if(tp.isRight() != isRight){
+            if(isRight){
+                state.indicatorLeft = true;
+                state.indicatorRight = false;
+            }else{
+                state.indicatorLeft = false;
+                state.indicatorRight = true;
+
+            }
+            break;
         }
     }
-    */
+
     //insert the state
     car->putState(state);
 
@@ -122,85 +120,12 @@ bool TrajectoryPointController::cycle() {
     *debugging_trajectoryPoint = trajectoryPoint;
     return true;
 }
-float TrajectoryPointController::targetVelocity(){
-    velocityWeight.start(); //reset data
-    float velocity = 0;
-    float maxForcastLength = config().get<float>("maxForcastLength",1);
-    float minForcastLength = config().get<float>("minForcastLength",0.3);
-    float maxAngle = config().get<float>("maxAngle",0.6);
-    float maxSpeed = config().get<float>("maxSpeed",1);
-    float minCurveSpeed = config().get<float>("minSpeed",maxSpeed/2);
-    /*
-        TODO
-    if(maxForcastLength > trajectory->length()){
-        slowDownCar.set(config().get<float>("PID_Kp",1),config().get<float>("PID_Ki",0),config().get<float>("PID_Kd",0),config().get<float>("dt",0.01));
-        //road will come to an end
-        //reduce speed, we drive backwards if we went to far!
-        velocity = slowDownCar.pid(trajectory->length()*lms::math::sgn<float>(trajectory->points()[trajectory->points().size()-1].x));
-        if(isnan(velocity)){
-            logger.error("targetVelocity.normalDrive")<<"velocity is NAN";
-            velocity = 0;
-        }
-    }else{
-        //reset the PID controller
-        slowDownCar.reset();
-        //TODO Momentan ist es wichtig, dass die Trajectorie sehr fein ist!
-        //TODO that was stupud lms::math::polyLine2f tempTraj = trajectory->getWithDistanceBetweenPoints(config().get<float>("distanceBetweenTrajectoryPoints",0.05));
-        float currentDistance = 0;
-        for(int i = 1; i <(int) trajectory->points().size(); i++){
-            lms::math::vertex2f bot = trajectory->points()[i-1];
-            lms::math::vertex2f top = trajectory->points()[i];
-            currentDistance += bot.distance(top);
-
-            if(currentDistance < minForcastLength){
-                continue;
-            }
-
-            if(bot.length() == 0 && top.length()==0){
-                velocityWeight.add(0,currentDistance); //Not sure if that is smart
-            }else{
-                float newAngle = 0;
-                if(bot.length() == 0){
-                    newAngle = top.angle();
-                }else{
-                    newAngle = bot.angleBetween(top);
-                }
-                newAngle = fabs(newAngle);
-
-                velocityWeight.add(newAngle,currentDistance);
-            }
-            if(currentDistance > maxForcastLength){//we always want one step
-                break;
-            }
-
-        }
-        velocity = (minCurveSpeed-maxSpeed)/maxAngle*(velocityWeight.average())+maxSpeed;
-
-        logger.debug("velocity")<<"angle: "<< velocityWeight.average()<<"velocity: "<<velocity;
-        if(isnan(velocity)){
-            logger.error("targetVelocity.normalDrive")<<"velocity is NAN";
-            velocity = 0;
-        }
-
-    }
-    if(isnan(velocity)){
-        logger.error("targetVelocity")<<"velocity is NAN"<<" trajectory pointCount "<<trajectory->points().size();
-        velocity = 0;
-    }
-    */
-    return velocity;
-}
 
 void TrajectoryPointController::configsChanged(){
     m_mpcLookupVelocity.vx = config().getArray<float>("mpcLookupVelocityX");
     m_mpcLookupVelocity.vy = config().getArray<float>("mpcLookupVelocityY");
     m_trajectoryPointDistanceLookup.vx = config().getArray<float>("trajectoryPointDistanceLookupX");
     m_trajectoryPointDistanceLookup.vy = config().getArray<float>("trajectoryPointDistanceLookupY");
-    velocityWeight.inter.maxHeight = config().get<float>("velocityWeightMaxHeight",3);
-    velocityWeight.inter.offSet = config().get<float>("velocityWeightOffSet",2);
-    velocityWeight.inter.x0 = config().get<float>("velocityWeightX0",0.5);
-    velocityWeight.inter.x1 = config().get<float>("velocityWeightX1",1.2);
-    velocityWeight.inter.xMax = config().get<float>("velocityWeight",1.0);
     slowDownCar.set(config().get<float>("PID_Kp",1),config().get<float>("PID_Ki",0),config().get<float>("PID_Kd",0),config().get<float>("dt",0.01));
 
 }
