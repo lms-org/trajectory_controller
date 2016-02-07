@@ -96,7 +96,7 @@ bool TrajectoryPointController::cycle() {
     logger.debug("positionController")<<"dv: "<<state.steering_front<< " dh"<<state.steering_rear<<" vel: "<<state.targetSpeed;
     //set the indicator
     //get the closest change
-    //TODO set the indicator #Important
+    //set the indicator
     //float indicatorMaxDistance = config().get<float>("indicatorMaxDistance",0.5);
     bool isRight = trajectory->at(0).isRight();
     for(const street_environment::TrajectoryPoint &tp:*trajectory){
