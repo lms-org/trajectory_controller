@@ -10,6 +10,7 @@
 #include "lms/math/interpolation.h"
 #include "lms/math/lookup_table.h"
 #include "sensor_utils/pid_controller.h"
+#include "phoenix_CC2016_service/phoenix_CC2016_service.h"
 
 //http://stackoverflow.com/questions/7159348/disable-single-warning-error
 //http://stackoverflow.com/questions/3378560/how-to-disable-gcc-warnings-for-a-few-lines-of-code
