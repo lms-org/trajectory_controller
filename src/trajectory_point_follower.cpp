@@ -132,10 +132,10 @@ bool TrajectoryPointController::cycle() {
         }
 
         if(isTurn) {
-            if(turnStart.since() > lms::Time::fromMillis(500)) {
+            if(turnStart.since() > lms::Time::fromMillis(400)) {
                 state.indicatorLeft  = false;
                 state.indicatorRight = true;
-            } else if(turnStart.since() > lms::Time::fromMillis(800)) {
+            } else if(turnStart.since() > lms::Time::fromMillis(700)) {
                 isTurn = false;
                 state.indicatorLeft  = false;
                 state.indicatorRight = false;
