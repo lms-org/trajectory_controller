@@ -270,14 +270,13 @@ street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoin
     }
 
     //HACK stop at crossing
+    float minVelocity = config().get<float>("maxVelocityCrossing", 1.0);
     for(const street_environment::TrajectoryPoint &v:*trajectory){
         if(v.velocity == 0){
             float distanceToStop = lms::math::sgn(v.position.x)*v.position.length() - config().get<float>("stoppingDistance",0.35);
-            if(distanceToStop < 0.0)
-                distanceToStop = 0.0;
             if(distanceToStop < config().get<float>("distanceToStop",1)){
                 logger.debug("distanceToStop")<< distanceToStop;
-                float maxVelocityCrossing = config().get<float>("maxVelocityCrossing", 2.0);
+                float maxVelocityCrossing = config().get<float>("maxVelocityCrossing", 1.0);
                 float velocity = slowDownCar.pid(distanceToStop);
                 if(isnan(velocity) || velocity >= maxVelocityCrossing){
                     velocity = maxVelocityCrossing;
@@ -285,8 +284,11 @@ street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoin
                 if(distanceToStop<= config().get<float>("crossingSaftyZone",0.05) || velocity < 0){
                     velocity = 0.0;
                 }
+                if(velocity < minVelocity){
+                    minVelocity = velocity;
+                }
 
-                trajectoryPoint.velocity = velocity;
+                trajectoryPoint.velocity = minVelocity;
             }else{
                 slowDownCar.reset();
             }
