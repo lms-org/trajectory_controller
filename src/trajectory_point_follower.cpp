@@ -300,6 +300,10 @@ street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoin
                 }
 
                 trajectoryPoint.velocity = minVelocity;
+                //0 is our min velocity
+                if(minVelocity == 0){
+                    break;
+                }
             }else{
                 slowDownCar.reset();
             }
