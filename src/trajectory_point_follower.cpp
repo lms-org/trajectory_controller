@@ -109,7 +109,7 @@ bool TrajectoryPointController::cycle() {
     state.indicatorLeft  = false;
     state.indicatorRight = false;
 
-    if(enableIndicators) {
+    if(enableIndicators && trajectory->size() > 1) {
         bool isRight = trajectory->at(1).isRight();
         size_t i = 0;
         for(const street_environment::TrajectoryPoint &tp:*trajectory){
@@ -117,14 +117,14 @@ bool TrajectoryPointController::cycle() {
                 continue;
             }
             if(isRight) {
-                if(tp.isRight() != isRight){
+                if(tp.isRight()){
                     // Lane change right -> left
                     state.indicatorLeft  = true;
                     state.indicatorRight = false;
                     break;
                 }
             } else {
-                if(tp.isRight() == isRight) {
+                if(tp.isRight()) {
                     // Lane change left -> right
                     state.indicatorLeft  = false;
                     state.indicatorRight = true;
