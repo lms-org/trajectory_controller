@@ -103,17 +103,23 @@ bool TrajectoryPointController::cycle() {
     //set the indicator
     //float indicatorMaxDistance = config().get<float>("indicatorMaxDistance",0.5);
     bool isRight = trajectory->at(0).isRight();
+    state.indicatorLeft  = false;
+    state.indicatorRight = false;
     for(const street_environment::TrajectoryPoint &tp:*trajectory){
-        if(tp.isRight() != isRight){
-            if(isRight){
-                state.indicatorLeft = true;
+        if(isRight) {
+            if(tp.isRight() != isRight){
+                // Lane change right -> left
+                state.indicatorLeft  = true;
                 state.indicatorRight = false;
-            }else{
-                state.indicatorLeft = false;
-                state.indicatorRight = true;
-
+                break;
             }
-            break;
+        } else {
+            if(tp.isRight() == isRight) {
+                // Lane change left -> right
+                state.indicatorLeft  = false;
+                state.indicatorRight = true;
+                break;
+            }
         }
     }
 
