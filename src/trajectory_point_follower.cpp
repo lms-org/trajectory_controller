@@ -30,10 +30,14 @@ bool TrajectoryPointController::deinitialize() {
 
 bool TrajectoryPointController::cycle() {
     float distanceToTrajectoryPoint = m_trajectoryPointDistanceLookup.linearSearch(car->velocity());
+    bool enableIndicators = true;
     //const float distanceSearched = config().get<float>("distanceRegelpunkt", 0.50);
 
-    if(getService<phoenix_CC2016_service::Phoenix_CC2016Service>("PHOENIX_SERVICE")->driveMode() == phoenix_CC2016_service::CCDriveMode::FOH){
+
+    auto phxService = getService<phoenix_CC2016_service::Phoenix_CC2016Service>("PHOENIX_SERVICE");
+    if(phxService->driveMode() == phoenix_CC2016_service::CCDriveMode::FOH){
         distanceToTrajectoryPoint = config().get<float>("regelpunktMin", 0.6) + car->velocity()*config().get<float>("regelpunktSlope", 0.1);
+        enableIndicators = false;
     }
 
     street_environment::TrajectoryPoint trajectoryPoint = getTrajectoryPoint(distanceToTrajectoryPoint);
@@ -102,23 +106,30 @@ bool TrajectoryPointController::cycle() {
     //get the closest change
     //set the indicator
     //float indicatorMaxDistance = config().get<float>("indicatorMaxDistance",0.5);
-    bool isRight = trajectory->at(0).isRight();
     state.indicatorLeft  = false;
     state.indicatorRight = false;
-    for(const street_environment::TrajectoryPoint &tp:*trajectory){
-        if(isRight) {
-            if(tp.isRight() != isRight){
-                // Lane change right -> left
-                state.indicatorLeft  = true;
-                state.indicatorRight = false;
-                break;
+
+    if(enableIndicators) {
+        bool isRight = trajectory->at(1).isRight();
+        size_t i = 0;
+        for(const street_environment::TrajectoryPoint &tp:*trajectory){
+            if(i++ == 0) {
+                continue;
             }
-        } else {
-            if(tp.isRight() == isRight) {
-                // Lane change left -> right
-                state.indicatorLeft  = false;
-                state.indicatorRight = true;
-                break;
+            if(isRight) {
+                if(tp.isRight() != isRight){
+                    // Lane change right -> left
+                    state.indicatorLeft  = true;
+                    state.indicatorRight = false;
+                    break;
+                }
+            } else {
+                if(tp.isRight() == isRight) {
+                    // Lane change left -> right
+                    state.indicatorLeft  = false;
+                    state.indicatorRight = true;
+                    break;
+                }
             }
         }
     }
