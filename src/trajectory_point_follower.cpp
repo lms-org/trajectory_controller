@@ -120,7 +120,7 @@ bool TrajectoryPointController::cycle() {
                 continue;
             }
             if(isRight) {
-                if(tp.isRight()){
+                if(!tp.isRight()){
                     // Lane change right -> left
                     state.indicatorLeft  = true;
                     state.indicatorRight = false;
@@ -132,13 +132,13 @@ bool TrajectoryPointController::cycle() {
         }
 
         if(isTurn) {
-            if(turnStart.since() > lms::Time::fromMillis(400)) {
-                state.indicatorLeft  = false;
-                state.indicatorRight = true;
-            } else if(turnStart.since() > lms::Time::fromMillis(700)) {
+            if(turnStart.since() > lms::Time::fromMillis(700)) {
                 isTurn = false;
                 state.indicatorLeft  = false;
                 state.indicatorRight = false;
+            }else if(turnStart.since() > lms::Time::fromMillis(400)) {
+                state.indicatorLeft  = false;
+                state.indicatorRight = true;
             }
         }
     }
