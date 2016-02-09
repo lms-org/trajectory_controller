@@ -65,6 +65,8 @@ private:
      */
     lms::WriteDataChannel<street_environment::TrajectoryPoint> debugging_trajectoryPoint;
 
+    lms::Time turnStart;
+    bool isTurn;
 
 };
 
