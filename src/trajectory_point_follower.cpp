@@ -269,22 +269,18 @@ street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoin
             float distanceToStop = lms::math::sgn(v.position.x)*v.position.length() - config().get<float>("stoppingDistance",0.35);
             if(distanceToStop < 0.0)
                 distanceToStop = 0.0;
-            if(distanceToStop < config().get<float>("distanceToStop",1) && distanceToStop > config().get<float>("crossingSaftyZone",0.05)){
+            if(distanceToStop < config().get<float>("distanceToStop",1)){
                 logger.debug("distanceToStop")<< distanceToStop;
                 float maxVelocityCrossing = config().get<float>("maxVelocityCrossing", 2.0);
                 float velocity = slowDownCar.pid(distanceToStop);
-                if(!isnan(velocity) || velocity <= maxVelocityCrossing){
-                    trajectoryPoint.velocity = velocity;
-                    break;
-                }
-                else if(distanceToStop <= config().get<float>("crossingSaftyZone",0.05) || velocity < 0)
-                {
-                    velocity = 0.0;
-                }
-                else
-                {
+                if(isnan(velocity) || velocity >= maxVelocityCrossing){
                     velocity = maxVelocityCrossing;
                 }
+                if(distanceToStop<= config().get<float>("crossingSaftyZone",0.05) || velocity < 0){
+                    velocity = 0.0;
+                }
+
+                trajectoryPoint.velocity = velocity;
             }else{
                 slowDownCar.reset();
             }
