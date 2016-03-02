@@ -42,6 +42,22 @@ bool TrajectoryPointController::cycle() {
         distanceToTrajectoryPoint = config().get<float>("regelpunktMin", 0.6) + car->velocity()*config().get<float>("regelpunktSlope", 0.1);
         enableIndicators = false;
     }
+    if(phxService->driveMode() == phoenix_CC2016_service::CCDriveMode::IDLE){
+
+        sensor_utils::Car::State *tmp = car->getState("IDLE");
+        sensor_utils::Car::State state;
+        if(tmp){
+            state = *tmp;
+        }
+        state.state = sensor_utils::Car::StateType::IDLE;
+        state.priority = 100;
+        state.name = "IDLE";
+        state.steering_front = 0;
+        state.steering_rear = 0;
+        state.targetSpeed = 0;
+    }else{
+        car->removeState("IDLE");
+    }
 
     street_environment::TrajectoryPoint trajectoryPoint = getTrajectoryPoint(distanceToTrajectoryPoint);
     //double v = sensor_utils::Car::velocity();
