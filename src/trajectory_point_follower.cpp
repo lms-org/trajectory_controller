@@ -55,6 +55,8 @@ bool TrajectoryPointController::cycle() {
         state.steering_front = 0;
         state.steering_rear = 0;
         state.targetSpeed = 0;
+        car->putState(state);
+        return true;
     }else{
         car->removeState("IDLE");
     }
