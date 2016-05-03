@@ -10,7 +10,7 @@ bool TrajectoryPointController::initialize() {
     trajectory = readChannel<street_environment::Trajectory>("TRAJECTORY");
     debugging_trajectoryPoint = writeChannel<street_environment::TrajectoryPoint>("TRAJECTORY_POINT");
 
-    car = writeChannel<sensor_utils::Car>("CAR");
+    car = writeChannel<street_environment::Car>("CAR");
 
     //Stellgroessenbeschraenkung
     double alpha_max = 22*M_PI/180;
@@ -44,12 +44,12 @@ bool TrajectoryPointController::cycle() {
     }
     if(phxService->driveMode() == phoenix_CC2016_service::CCDriveMode::IDLE){
 
-        sensor_utils::Car::State *tmp = car->getState("IDLE");
-        sensor_utils::Car::State state;
+        street_environment::Car::State *tmp = car->getState("IDLE");
+        street_environment::Car::State state;
         if(tmp){
             state = *tmp;
         }
-        state.state = sensor_utils::Car::StateType::IDLE;
+        state.state = street_environment::Car::StateType::IDLE;
         state.priority = 100;
         state.name = "IDLE";
         state.steering_front = 0;
@@ -62,7 +62,7 @@ bool TrajectoryPointController::cycle() {
     }
 
     street_environment::TrajectoryPoint trajectoryPoint = getTrajectoryPoint(distanceToTrajectoryPoint);
-    //double v = sensor_utils::Car::velocity();
+    //double v = street_environment::Car::velocity();
     double v = car->velocity();
     if(fabs(v) < 0.1){
         logger.debug("cycle")<<"ar is slow: "<<car->velocity();
@@ -105,8 +105,8 @@ bool TrajectoryPointController::cycle() {
     //----------
 
     //set the default state
-    sensor_utils::Car::State *tmp = car->getState("DEFAULT");
-    sensor_utils::Car::State state;
+    street_environment::Car::State *tmp = car->getState("DEFAULT");
+    street_environment::Car::State state;
     if(tmp){
         state = *tmp;
     }
@@ -117,9 +117,9 @@ bool TrajectoryPointController::cycle() {
     state.steering_rear = steering_rear; // * 180. / M_PI;
     state.targetSpeed = trajectoryPoint.velocity;
     if(trajectoryPoint.velocity == 0){
-        state.state = sensor_utils::Car::StateType::IDLE;
+        state.state = street_environment::Car::StateType::IDLE;
     }else{
-        state.state = sensor_utils::Car::StateType::DRIVING;
+        state.state = street_environment::Car::StateType::DRIVING;
     }
 
     logger.debug("positionController")<<"dv: "<<state.steering_front<< " dh"<<state.steering_rear<<" vel: "<<state.targetSpeed;
