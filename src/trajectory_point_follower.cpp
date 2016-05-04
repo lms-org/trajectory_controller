@@ -1,9 +1,5 @@
 #include "trajectory_point_follower.h"
-extern "C"{
-#include "lenkwinkel.h"
-}
 #include <cmath>
-
 
 
 bool TrajectoryPointController::initialize() {
@@ -85,8 +81,11 @@ bool TrajectoryPointController::cycle() {
            mpcParameters.stepSize = 0.1; //Zeitschrittgroesse fuer MPC
            mpcController(v, y_soll, phi_soll, &steering_front, &steering_rear);
     }else{
-        lenkwinkel(trajectoryPoint.position.length(),y_soll,phi_soll,1,&steering_rear,&steering_front);
+        logger.error("Well done Mr.")<<"mpc or not to mpc, mpc is the question";
+        exit(0);
+
     }
+
     logger.debug("trajectory_point_controller") << "lw vorne: " << steering_front*180/M_PI << "  lw hinten: " << steering_rear*180/M_1_PI;
     if(isnan(steering_front) || isnan(steering_rear || isnan(trajectoryPoint.velocity)) ){
         logger.error("trajectory_point_controller: ")<<"invalid vals: " <<steering_front <<" " <<steering_rear ;
@@ -116,6 +115,7 @@ bool TrajectoryPointController::cycle() {
     state.steering_front = steering_front; // * 180. / M_PI;
     state.steering_rear = steering_rear; // * 180. / M_PI;
     state.targetSpeed = trajectoryPoint.velocity;
+    state.targetDistance = trajectoryPoint.position.length(); //TODO absolutwert
     if(trajectoryPoint.velocity == 0){
         state.state = street_environment::Car::StateType::IDLE;
     }else{

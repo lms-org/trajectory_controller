@@ -40,10 +40,6 @@ private:
     sensor_utils::PID slowDownCar;
 
     void mpcController(double v, double delta_y, double delta_phi, double *steering_front, double *steering_rear);
-    double delta_c_h(double phi_s, double te, double v, double y_s);
-    double delta_c_v(double phi_s, double te, double v, double y_s, double dh);
-    double delta_h(double y_s, double phi_s, double te);
-    double delta_v(double y_s, double phi_s, double te, double dh);
     void configsChanged() override;
 
     double l = 0.21; //Radstand
