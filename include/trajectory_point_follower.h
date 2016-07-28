@@ -5,7 +5,7 @@
 #include "lms/math/vertex.h"
 #include "lms/math/lookup_table.h"
 
-#include "sensor_utils/car.h"
+#include "street_environment/car.h"
 #include "street_environment/trajectory.h"
 #include "lms/math/interpolation.h"
 #include "lms/math/lookup_table.h"
