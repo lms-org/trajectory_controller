@@ -87,7 +87,7 @@ bool TrajectoryPointController::cycle() {
     }
 
     logger.debug("trajectory_point_controller") << "lw vorne: " << steering_front*180/M_PI << "  lw hinten: " << steering_rear*180/M_1_PI;
-    if(isnan(steering_front) || isnan(steering_rear || isnan(trajectoryPoint.velocity)) ){
+    if(std::isnan(steering_front) || std::isnan(steering_rear || std::isnan(trajectoryPoint.velocity)) ){
         logger.error("trajectory_point_controller: ")<<"invalid vals: " <<steering_front <<" " <<steering_rear ;
     }
 
@@ -316,7 +316,7 @@ street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoin
                 logger.debug("distanceToStop")<< distanceToStop;
                 float maxVelocityCrossing = config().get<float>("maxVelocityCrossing", 1.0);
                 float velocity = slowDownCar.pid(distanceToStop);
-                if(isnan(velocity) || velocity >= maxVelocityCrossing){
+                if(std::isnan(velocity) || velocity >= maxVelocityCrossing){
                     velocity = maxVelocityCrossing;
                 }
                 if(distanceToStop<= config().get<float>("crossingSaftyZone",0.05) || velocity < 0){
