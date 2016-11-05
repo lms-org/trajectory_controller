@@ -262,6 +262,7 @@ void TrajectoryPointController::mpcController(double v, double delta_y, double d
 
     *steering_front = action(0,0);
     *steering_rear = action(1,0);
+    //TODO get angle per time
 
     return;
 
