@@ -61,7 +61,7 @@ bool TrajectoryPointController::cycle() {
     //double v = street_environment::Car::velocity();
     double v = car->velocity();
     if(fabs(v) < 0.1){
-        logger.debug("cycle")<<"ar is slow: "<<car->velocity();
+        logger.debug("cycle")<<"car is slow: "<<car->velocity();
         v=0.1;//Some controller has some issue divides by v without error-checking
     }
 
@@ -286,6 +286,19 @@ street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoin
         return trajectoryPoint;
     }
     bool found = false;
+    /*
+    //could be more stable if the trajectory changes it's direction because of an obstacle etc.
+    for(const street_environment::TrajectoryPoint &v:*trajectory){
+        if(v.position.length() > distanceToPoint){
+            lms::math::vertex2f top = v.position.normalize();
+            trajectoryPoint.position = top * distanceToPoint;
+            trajectoryPoint.directory = top;
+            found = true;
+            break;
+        }
+    }
+    */
+    //old code
     //Nur den Abstand in x-richtung zu nehmen ist nicht schlau, denn wenn das Auto eskaliert eskaliert der Regler noch viel mehr!
     float currentDistance = 0;
     for(int i = 1; i < (int)trajectory->size();i++){
@@ -307,6 +320,7 @@ street_environment::TrajectoryPoint TrajectoryPointController::getTrajectoryPoin
         logger.warn("No trajectoryPoint found, returning the last point of the trajectory")<<"trajPointCount"<<trajectory->size()<< " distanceSearched: "<< currentDistance << " distanceToTrajectoryPoint: "<< distanceToPoint;
         trajectoryPoint = trajectory->at(trajectory->size()-1);
     }
+
 
     //HACK stop at crossing
     float minVelocity = config().get<float>("maxVelocityCrossing", 1.0);
