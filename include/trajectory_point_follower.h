@@ -38,8 +38,10 @@ private:
      * @brief slowDownCar used to slow down the car if the trajectory comes to an end
      */
     sensor_utils::PID slowDownCar;
+    sensor_utils::PID pidControllerFront;
+    sensor_utils::PID pidControllerRear;
 
-    void mpcController(double v, double delta_y, double delta_phi, double *steering_front, double *steering_rear);
+    void mpcControllerTobi(double v, double delta_y, double delta_phi, double *steering_front, double *steering_rear);
     void configsChanged() override;
 
     double l = 0.21; //Radstand

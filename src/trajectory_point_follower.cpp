@@ -28,18 +28,8 @@ bool TrajectoryPointController::deinitialize() {
 }
 
 bool TrajectoryPointController::cycle() {
-    float distanceToTrajectoryPoint = m_trajectoryPointDistanceLookup.linearSearch(car->velocity());
-    bool enableIndicators = true;
-    //const float distanceSearched = config().get<float>("distanceRegelpunkt", 0.50);
-
-
     auto phxService = getService<phoenix_CC2016_service::Phoenix_CC2016Service>("PHOENIX_SERVICE");
-    if(phxService->driveMode() == phoenix_CC2016_service::CCDriveMode::FOH){
-        distanceToTrajectoryPoint = config().get<float>("regelpunktMin", 0.6) + car->velocity()*config().get<float>("regelpunktSlope", 0.1);
-        enableIndicators = false;
-    }
     if(phxService->driveMode() == phoenix_CC2016_service::CCDriveMode::IDLE){
-
         street_environment::Car::State *tmp = car->getState("IDLE");
         street_environment::Car::State state;
         if(tmp){
@@ -57,52 +47,6 @@ bool TrajectoryPointController::cycle() {
         car->removeState("IDLE");
     }
 
-    street_environment::TrajectoryPoint trajectoryPoint = getTrajectoryPoint(distanceToTrajectoryPoint);
-    //double v = street_environment::Car::velocity();
-    double v = car->velocity();
-    if(fabs(v) < 0.1){
-        logger.debug("cycle")<<"car is slow: "<<car->velocity();
-        v=0.1;//Some controller has some issue divides by v without error-checking
-    }
-
-    double phi_soll = atan2(trajectoryPoint.directory.y, trajectoryPoint.directory.x);
-    double y_soll = trajectoryPoint.position.y;
-
-    //logger.error("phi_soll")<<phi_soll<< " "<< y_soll;
-
-    double steering_front, steering_rear;
-
-    if(config().get<bool>("useMPCcontroller",true)){
-            //von config einlesen, um live einzustellen
-           mpcParameters.weight_y = config().get<double>("weight_y",20);
-           mpcParameters.weight_phi = config().get<double>("weight_phi",7);
-           mpcParameters.weight_steeringFront = config().get<double>("weight_steering_front",0.0005);
-           mpcParameters.weight_steeringRear = config().get<double>("weight_steering_rear",10);
-           mpcParameters.stepSize = 0.1; //Zeitschrittgroesse fuer MPC
-           mpcController(v, y_soll, phi_soll, &steering_front, &steering_rear);
-    }else{
-        logger.error("Well done Mr.")<<"mpc or not to mpc, mpc is the question";
-        exit(0);
-
-    }
-
-    logger.debug("trajectory_point_controller") << "lw vorne: " << steering_front*180/M_PI << "  lw hinten: " << steering_rear*180/M_1_PI;
-    if(std::isnan(steering_front) || std::isnan(steering_rear || std::isnan(trajectoryPoint.velocity)) ){
-        logger.error("trajectory_point_controller: ")<<"invalid vals: " <<steering_front <<" " <<steering_rear ;
-    }
-
-    //TEST Adaptiver Gierboost
-    double yawRate_ist = car->turnRate();
-    double yawRate_soll = car->velocity()/0.21*sin(steering_front - steering_rear)/cos(steering_front);
-    double yawRate_error = yawRate_soll - yawRate_ist;
-    double steeringCorrection = yawRate_error * config().get<float>("yawRateBoost", 0.0);
-    steering_front += steeringCorrection;
-
-
-    //debug-----
-    //myfile << steering_front << "," << steering_rear << "," << v << std::endl;
-    //----------
-
     //set the default state
     street_environment::Car::State *tmp = car->getState("DEFAULT");
     street_environment::Car::State state;
@@ -112,21 +56,87 @@ bool TrajectoryPointController::cycle() {
     state.priority = 10;
     state.name = "DEFAULT";
 
-    state.steering_front = steering_front; // * 180. / M_PI;
-    state.steering_rear = steering_rear; // * 180. / M_PI;
-    state.targetSpeed = trajectoryPoint.velocity;
-    state.targetDistance = trajectoryPoint.position.length(); //TODO absolutwert
-    if(trajectoryPoint.velocity == 0){
-        state.state = street_environment::Car::StateType::IDLE;
+    //get type
+    std::string type = config().get<std::string>("type","tobiMPC");
+    if(type == "tobiMPC"){
+        float distanceToTrajectoryPoint = m_trajectoryPointDistanceLookup.linearSearch(car->velocity());
+        //const float distanceSearched = config().get<float>("distanceRegelpunkt", 0.50);
+
+
+        if(phxService->driveMode() == phoenix_CC2016_service::CCDriveMode::FOH){
+            distanceToTrajectoryPoint = config().get<float>("regelpunktMin", 0.6) + car->velocity()*config().get<float>("regelpunktSlope", 0.1);
+            //enableIndicators = false;
+        }
+
+        //get the trajectory point
+        street_environment::TrajectoryPoint trajectoryPoint = getTrajectoryPoint(distanceToTrajectoryPoint);
+        //double v = street_environment::Car::velocity();
+        double v = car->velocity();
+        if(fabs(v) < 0.1){
+            logger.debug("cycle")<<"car is slow: "<<car->velocity();
+            v=0.1;//Some controller has some issue divides by v without error-checking
+        }
+
+        double phi_soll = atan2(trajectoryPoint.directory.y, trajectoryPoint.directory.x);
+        double y_soll = trajectoryPoint.position.y;
+
+        //logger.error("phi_soll")<<phi_soll<< " "<< y_soll;
+
+        double steering_front, steering_rear;
+
+        //von config einlesen, um live einzustellen
+       mpcParameters.weight_y = config().get<double>("weight_y",20);
+       mpcParameters.weight_phi = config().get<double>("weight_phi",7);
+       mpcParameters.weight_steeringFront = config().get<double>("weight_steering_front",0.0005);
+       mpcParameters.weight_steeringRear = config().get<double>("weight_steering_rear",10);
+       mpcParameters.stepSize = 0.1; //Zeitschrittgroesse fuer MPC
+       mpcControllerTobi(v, y_soll, phi_soll, &steering_front, &steering_rear);
+
+
+        logger.debug("trajectory_point_controller") << "lw vorne: " << steering_front*180/M_PI << "  lw hinten: " << steering_rear*180/M_1_PI;
+        if(std::isnan(steering_front) || std::isnan(steering_rear || std::isnan(trajectoryPoint.velocity)) ){
+            logger.error("trajectory_point_controller: ")<<"invalid vals: " <<steering_front <<" " <<steering_rear ;
+        }
+
+        /*
+        //TEST Adaptiver Gierboost
+        double yawRate_ist = car->turnRate();
+        double yawRate_soll = car->velocity()/0.21*sin(steering_front - steering_rear)/cos(steering_front);
+        double yawRate_error = yawRate_soll - yawRate_ist;
+        double steeringCorrection = yawRate_error * config().get<float>("yawRateBoost", 0.0);
+        steering_front += steeringCorrection;
+        */
+
+        state.steering_front = steering_front; // * 180. / M_PI;
+        state.steering_rear = steering_rear; // * 180. / M_PI;
+        state.targetSpeed = trajectoryPoint.velocity;
+        state.targetDistance = trajectoryPoint.position.length(); //TODO absolutwert
+
+        //set trajectoryPoint for debugging;
+        *debugging_trajectoryPoint = trajectoryPoint;
+        if(trajectoryPoint.velocity == 0){
+            state.state = street_environment::Car::StateType::IDLE;
+        }else{
+            state.state = street_environment::Car::StateType::DRIVING;
+        }
+
+    }else if(type == "mikMPC"){
+
     }else{
-        state.state = street_environment::Car::StateType::DRIVING;
+        //use simple pid controller
+        float distanceToTrajectoryPoint = m_trajectoryPointDistanceLookup.linearSearch(car->velocity());
+        //get the trajectory point
+        street_environment::TrajectoryPoint trajectoryPoint = getTrajectoryPoint(distanceToTrajectoryPoint);
+        double angleFront = pidControllerFront.pid(trajectoryPoint.position.y);
+        double angleRear = pidControllerRear.pid(trajectoryPoint.directory.angle());
+        state.steering_front = angleFront;
+        state.steering_rear = angleRear;
+        state.targetSpeed = trajectoryPoint.velocity;
+        state.targetDistance = trajectoryPoint.position.length();
     }
 
-    logger.debug("positionController")<<"dv: "<<state.steering_front<< " dh"<<state.steering_rear<<" vel: "<<state.targetSpeed;
-    //set the indicator
-    //get the closest change
-    //set the indicator
-    //float indicatorMaxDistance = config().get<float>("indicatorMaxDistance",0.5);
+    //set the indicator, sending only once failed CC2016. //TODO better handling
+    bool enableIndicators = true;
     state.indicatorLeft  = false;
     state.indicatorRight = false;
 
@@ -163,9 +173,6 @@ bool TrajectoryPointController::cycle() {
 
     //insert the state
     car->putState(state);
-
-    //set trajectoryPoint for debugging;
-    *debugging_trajectoryPoint = trajectoryPoint;
     return true;
 }
 
@@ -175,10 +182,11 @@ void TrajectoryPointController::configsChanged(){
     m_trajectoryPointDistanceLookup.vx = config().getArray<float>("trajectoryPointDistanceLookupX");
     m_trajectoryPointDistanceLookup.vy = config().getArray<float>("trajectoryPointDistanceLookupY");
     slowDownCar.set(config().get<float>("PID_Kp",1),config().get<float>("PID_Ki",0),config().get<float>("PID_Kd",0),config().get<float>("dt",0.01));
-
+    pidControllerFront.set(config().get<float>("PID_front_Kp",1),config().get<float>("PID_front_Ki",1),config().get<float>("PID_front_Kd",0),config().get<float>("dt",0.01));
+    pidControllerRear.set(config().get<float>("PID_rear_Kp",1),config().get<float>("PID_rear_Ki",1),config().get<float>("PID_rear_Kd",0),config().get<float>("dt",0.01));
 }
 
-void TrajectoryPointController::mpcController(double v, double delta_y, double delta_phi, double *steering_front, double *steering_rear) {
+void TrajectoryPointController::mpcControllerTobi(double v, double delta_y, double delta_phi, double *steering_front, double *steering_rear) {
 
     const int STATES = 2; //number of states (y and phi)
     const int CONTROLS = 2; //number of control inputs (steering_front and steering_rear)
