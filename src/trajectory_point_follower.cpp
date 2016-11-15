@@ -80,7 +80,7 @@ bool TrajectoryPointController::cycle() {
         double phi_soll = atan2(trajectoryPoint.directory.y, trajectoryPoint.directory.x);
         double y_soll = trajectoryPoint.position.y;
 
-        //logger.error("phi_soll")<<phi_soll<< " "<< y_soll;
+        logger.debug("phi y v")<<phi_soll<< " "<< y_soll<<" "<<v;
 
         double steering_front, steering_rear;
 
