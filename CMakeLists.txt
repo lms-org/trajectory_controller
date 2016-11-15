@@ -12,6 +12,7 @@ include_directories("include")
 include_directories("dlib_files")
 include_directories("control-systems/src")
 #add_definitions(-DENABLE_ASSERTS)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 
 add_library (trajectory_point_controller MODULE ${SOURCES} ${HEADERS} "dlib_files")
 target_link_libraries(trajectory_point_controller PRIVATE lmscore lms_sensor_utils street_environment lms_math phoenix_CC2016_service)
