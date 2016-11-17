@@ -1,10 +1,14 @@
 #include "trajectory_point_follower.h"
 #include <cmath>
+extern "C"{
+#include "andromeda.h"
+}
 
 
 bool TrajectoryPointController::initialize() {
     trajectory = readChannel<street_environment::Trajectory>("TRAJECTORY");
     debugging_trajectoryPoint = writeChannel<street_environment::TrajectoryPoint>("TRAJECTORY_POINT");
+    trajectoryDebug = writeChannel<street_environment::Trajectory>("TRAJECTORY_DEBUG");
 
     car = writeChannel<street_environment::Car>("CAR");
 
@@ -121,7 +125,82 @@ bool TrajectoryPointController::cycle() {
         }
 
     }else if(type == "mikMPC"){
+        //get trajectory with distance between points
+        logger.time("mikMPC");
+        double link_length = config().get<double>("link_length",0.1);
+        street_environment::Trajectory tr = trajectory->getWithDistanceBetweenPoints(link_length);
+        if(tr.size() < CHAIN_NUM_NODES){
+            logger.error("INVALID path given")<< tr.size();
+            trajectoryDebug->clear();
+            return false;
+        }
+        tr.erase(tr.begin()+CHAIN_NUM_NODES,tr.end());
+        *trajectoryDebug = tr;
+        //Inputs
+        double currentCarState[NUM_STATES];
+        double nodes_x[CHAIN_NUM_NODES];
+        double nodes_y[CHAIN_NUM_NODES];
+        double nodes_vMin[CHAIN_NUM_NODES-1];
+        double nodes_vMax[CHAIN_NUM_NODES-1];
+        double max_lateral_acc = 5;
+        double max_num_iter = 100;
+        double alpha = 0.5;
+        double beta_1 = 0.7;
+        double beta_2 = 1;
+        double q_diag[NUM_STATES];//	stage state cost matrix Q diagonal, len = NUM_STATES
+        double r_diag[NUM_INPUTS];//	stage input cost matrix R diagonal, len = NUM_INPUTS
+        double p_diag[NUM_STATES];
 
+        //car state
+        currentCarState[0] = 0;
+        currentCarState[1] = 0;
+        currentCarState[2] = car->steeringFront();
+        currentCarState[3] = car->steeringRear();
+
+        q_diag[0] = config().get<double>("penalty_y",10);
+        q_diag[1] = config().get<double>("penalty_phi",10);
+        q_diag[2] = config().get<double>("penalty_frontAngle",1);
+        q_diag[3] = config().get<double>("penalty_rearAngle",1);
+        //path
+        for(int i = 0; i < NUM_STATES; i++){
+            p_diag[i] = q_diag[i];
+        }
+        r_diag[0] = config().get<double>("penalty_frontAngle_rate",100);
+        r_diag[1] = config().get<double>("penalty_rearAngle_rate",100);
+
+
+        //set input date
+        for(int i = 0; i < CHAIN_NUM_NODES; i++){
+            const street_environment::TrajectoryPoint &t = tr[i];
+            nodes_x[i] = t.position.x;
+            nodes_y[i] = t.position.y;
+        }
+        for(int i = 0; i < CHAIN_NUM_NODES-1; i++){
+            /*
+            const street_environment::TrajectoryPoint &t = (*trajectory)[i];
+            const street_environment::TrajectoryPoint &t2 = (*trajectory)[i+1];
+            nodes_vMax[i] = std::max<double>(t.velocity,t2.velocity);
+            nodes_vMin[i] = std::min<double>(t.velocity,t2.velocity);
+            */
+            //for first tests:
+            nodes_vMax[i] = 0.5;
+            nodes_vMin[i] = 0.5;
+        }
+
+
+        //outputs
+        double v_star[HORIZON_LEN];
+        double u_1_star[HORIZON_LEN];
+        double u_2_star[HORIZON_LEN];
+
+        call_andromeda(currentCarState,q_diag,r_diag,p_diag,nodes_x,nodes_y,link_length,nodes_vMin,nodes_vMax,max_lateral_acc,max_num_iter,alpha,beta_1,beta_2,v_star,u_1_star,u_2_star);
+
+        //Set values
+        state.steering_front = car->steeringFront() + u_1_star[0];
+        state.steering_rear = car->steeringRear()+u_2_star[0];
+        state.targetSpeed = v_star[0];
+        state.targetDistance = 1; //TODO dont think that we even need it
+        logger.timeEnd("mikMPC");
     }else{
         //use simple pid controller
         float distanceToTrajectoryPoint = m_trajectoryPointDistanceLookup.linearSearch(car->velocity());
