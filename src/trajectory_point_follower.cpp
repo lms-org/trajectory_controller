@@ -155,6 +155,10 @@ bool TrajectoryPointController::cycle() {
         double q_diag[NUM_STATES];//	stage state cost matrix Q diagonal, len = NUM_STATES
         double r_diag[NUM_INPUTS];//	stage input cost matrix R diagonal, len = NUM_INPUTS
         double p_diag[NUM_STATES];
+        const double u_1_ub = config().get<double>("front_angle_rate_Bound",1);
+        const double u_1_lb = -u_1_ub;
+        const double u_2_ub = config().get<double>("rear_angle_rate_Bound",1);;
+        const double u_2_lb = -u_2_ub;
 
         //car state
         currentCarState[0] = 0;
@@ -198,7 +202,8 @@ bool TrajectoryPointController::cycle() {
         double u_1_star[HORIZON_LEN];
         double u_2_star[HORIZON_LEN];
 
-        call_andromeda(currentCarState,q_diag,r_diag,p_diag,nodes_x,nodes_y,link_length,nodes_vMin,nodes_vMax,max_lateral_acc,max_num_iter,alpha,beta_1,beta_2,v_star,u_1_star,u_2_star);
+        call_andromeda(currentCarState,q_diag,r_diag,p_diag,nodes_x,nodes_y,link_length,nodes_vMin,nodes_vMax,
+                       max_lateral_acc,max_num_iter,alpha,beta_1,beta_2,u_1_lb,u_1_ub,u_2_lb,u_2_ub,v_star,u_1_star,u_2_star);
 
         //Set values
         state.steering_front = car->steeringFront() + u_1_star[delay];
