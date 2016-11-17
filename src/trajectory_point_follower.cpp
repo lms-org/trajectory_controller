@@ -142,7 +142,7 @@ bool TrajectoryPointController::cycle() {
         double nodes_y[CHAIN_NUM_NODES];
         double nodes_vMin[CHAIN_NUM_NODES-1];
         double nodes_vMax[CHAIN_NUM_NODES-1];
-        double max_lateral_acc = 5;
+        double max_lateral_acc = config().get<double>("max_lateral_acc",1);
         double max_num_iter = 100;
         double alpha = 0.5;
         double beta_1 = 0.7;
@@ -183,8 +183,8 @@ bool TrajectoryPointController::cycle() {
             nodes_vMin[i] = std::min<double>(t.velocity,t2.velocity);
             */
             //for first tests:
-            nodes_vMax[i] = 0.5;
-            nodes_vMin[i] = 0.5;
+            nodes_vMax[i] = config().get<double>("node_MaxSpeed",0.5);
+            nodes_vMin[i] = config().get<double>("node_MinSpeed",0.5);
         }
 
 
