@@ -125,6 +125,11 @@ bool TrajectoryPointController::cycle() {
         }
 
     }else if(type == "mikMPC"){
+        int delay =  config().get<int>("stagePrediction",0);
+        if(delay < 0 || delay >= HORIZON_LEN){
+            logger.error("invalid stagePrediction")<<delay;
+            return false;
+        }
         //get trajectory with distance between points
         logger.time("mikMPC");
         double link_length = config().get<double>("link_length",0.1);
@@ -196,9 +201,9 @@ bool TrajectoryPointController::cycle() {
         call_andromeda(currentCarState,q_diag,r_diag,p_diag,nodes_x,nodes_y,link_length,nodes_vMin,nodes_vMax,max_lateral_acc,max_num_iter,alpha,beta_1,beta_2,v_star,u_1_star,u_2_star);
 
         //Set values
-        state.steering_front = car->steeringFront() + u_1_star[0];
-        state.steering_rear = car->steeringRear()+u_2_star[0];
-        state.targetSpeed = v_star[0];
+        state.steering_front = car->steeringFront() + u_1_star[delay];
+        state.steering_rear = car->steeringRear()+u_2_star[delay];
+        state.targetSpeed = v_star[delay];
         state.targetDistance = 1; //TODO dont think that we even need it
         logger.timeEnd("mikMPC");
     }else{
