@@ -10,7 +10,7 @@ bool TrajectoryPointController::initialize() {
     debugging_trajectoryPoint = writeChannel<street_environment::TrajectoryPoint>("TRAJECTORY_POINT");
     trajectoryDebug = writeChannel<street_environment::Trajectory>("TRAJECTORY_DEBUG");
 
-    car = writeChannel<street_environment::Car>("CAR");
+    car = writeChannel<street_environment::CarCommand>("CAR");
 
     //Stellgroessenbeschraenkung
     double alpha_max = 22*M_PI/180;
@@ -34,12 +34,12 @@ bool TrajectoryPointController::deinitialize() {
 bool TrajectoryPointController::cycle() {
     auto phxService = getService<phoenix_CC2016_service::Phoenix_CC2016Service>("PHOENIX_SERVICE");
     if(phxService->driveMode() == phoenix_CC2016_service::CCDriveMode::IDLE){
-        street_environment::Car::State *tmp = car->getState("IDLE");
-        street_environment::Car::State state;
+        street_environment::CarCommand::State *tmp = car->getState("IDLE");
+        street_environment::CarCommand::State state;
         if(tmp){
             state = *tmp;
         }
-        state.state = street_environment::Car::StateType::IDLE;
+        state.state = street_environment::CarCommand::StateType::IDLE;
         state.priority = 100;
         state.name = "IDLE";
         state.steering_front = 0;
@@ -52,8 +52,8 @@ bool TrajectoryPointController::cycle() {
     }
 
     //set the default state
-    street_environment::Car::State *tmp = car->getState("DEFAULT");
-    street_environment::Car::State state;
+    street_environment::CarCommand::State *tmp = car->getState("DEFAULT");
+    street_environment::CarCommand::State state;
     if(tmp){
         state = *tmp;
     }
@@ -119,9 +119,9 @@ bool TrajectoryPointController::cycle() {
         //set trajectoryPoint for debugging;
         *debugging_trajectoryPoint = trajectoryPoint;
         if(trajectoryPoint.velocity == 0){
-            state.state = street_environment::Car::StateType::IDLE;
+            state.state = street_environment::CarCommand::StateType::IDLE;
         }else{
-            state.state = street_environment::Car::StateType::DRIVING;
+            state.state = street_environment::CarCommand::StateType::DRIVING;
         }
 
     }else if(type == "mikMPC"){

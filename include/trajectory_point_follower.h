@@ -57,7 +57,7 @@ private:
     dlib::matrix<double,2,1> lower, upper;
 
     lms::ReadDataChannel<street_environment::Trajectory> trajectory;
-    lms::WriteDataChannel<street_environment::Car> car;
+    lms::WriteDataChannel<street_environment::CarCommand> car;
     /**
      * @brief trajectoryPoint only for debugging
      */
