@@ -262,6 +262,7 @@ bool TrajectoryPointController::cycle() {
 
     //insert the state
     car->putState(state);
+    logger.debug("car state, v, sf, sr")<<state.targetSpeed<<" "<<state.steering_front<<" "<<state.steering_rear;
     return true;
 }
 
