@@ -229,6 +229,19 @@ bool TrajectoryPointController::cycle() {
     state.indicatorLeft  = false;
     state.indicatorRight = false;
 
+    //check if the car is on the left/right
+    bool isRight = trajectory->at(0).isRight();
+    //check if we change side in the future
+    for(const street_environment::TrajectoryPoint &tp:*trajectory){
+        if(tp.isRight() != isRight){
+            //we will change lane
+            state.indicatorLeft  = isRight;
+            state.indicatorRight = !isRight;
+            logger.debug("turnindicator")<<"left "<< state.indicatorLeft<< ", right "<<state.indicatorLeft;
+            break;
+        }
+    }
+    /*
     if(enableIndicators && trajectory->size() > 1) {
         bool isRight = trajectory->at(1).isRight();
         size_t i = 0;
@@ -259,6 +272,7 @@ bool TrajectoryPointController::cycle() {
             }
         }
     }
+    */
 
     //insert the state
     car->putState(state);
