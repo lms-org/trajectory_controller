@@ -225,7 +225,6 @@ bool TrajectoryPointController::cycle() {
     }
 
     //set the indicator, sending only once failed CC2016. //TODO better handling
-    bool enableIndicators = true;
     state.indicatorLeft  = false;
     state.indicatorRight = false;
 
@@ -233,7 +232,7 @@ bool TrajectoryPointController::cycle() {
     bool isRight = trajectory->at(0).isRight();
     //check if we change side in the future
     for(const street_environment::TrajectoryPoint &tp:*trajectory){
-        if(tp.isRight() != isRight){
+        if((tp.isRight() != isRight) && state.targetSpeed != 0 ){ // do not indicate when not moving (prevent using indicators when in crossings)
             //we will change lane
             state.indicatorLeft  = isRight;
             state.indicatorRight = !isRight;
