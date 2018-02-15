@@ -232,7 +232,7 @@ bool TrajectoryPointController::cycle() {
     bool isRight = trajectory->at(0).isRight();
     //check if we change side in the future
     for(const street_environment::TrajectoryPoint &tp:*trajectory){
-        if((tp.isRight() != isRight) && state.targetSpeed != 0 ){ // do not indicate when not moving (prevent using indicators when in crossings)
+        if(tp.isRight() != isRight){
             //we will change lane
             state.indicatorLeft  = isRight;
             state.indicatorRight = !isRight;
@@ -272,6 +272,15 @@ bool TrajectoryPointController::cycle() {
         }
     }
     */
+
+    // we probably are in a crossing
+    if(state.targetSpeed < 0.5)
+    {
+        state.indicatorLeft = false;
+        state.indicatorRight = false;
+        state.steering_front = 0;
+        state.steering_rear = 0;
+    }
 
     //insert the state
     car->putState(state);
